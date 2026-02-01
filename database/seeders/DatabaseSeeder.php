@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Barrio;
 use App\Models\Socio;
-use App\Models\Sector;     // <--- No olvides importar estos
-use App\Models\Utileria;   // <--- No olvides importar estos
+use App\Models\Sector;
+use App\Models\Utileria;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

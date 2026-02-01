@@ -71,7 +71,7 @@ class BarrioController extends Controller
     {
         $barrio = Barrio::findOrFail($id);
         
-        // Opcional: Podrías validar si hay socios viviendo aquí antes de borrar
+        // Opcional: Se podría validar si hay socios viviendo aquí antes de borrar
         // if($barrio->socios()->exists()) { return error... }
 
         $barrio->delete();
