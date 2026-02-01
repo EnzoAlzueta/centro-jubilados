@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Utileria;
 use Illuminate\Http\Request;
 
 class UtileriaController extends Controller
