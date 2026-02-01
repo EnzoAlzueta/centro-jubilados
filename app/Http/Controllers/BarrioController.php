@@ -8,69 +8,74 @@ use Illuminate\Http\Request;
 class BarrioController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * GET /api/barrios
+     * Devuelve la lista completa de barrios.
+     * Ideal para llenar el <select> en el formulario de alta de socio.
      */
     public function index()
     {
-        // Trae todos los barrios de la base de datos
-        $barrios = \App\Models\Barrio::all(); 
-        return view('barrios.index', compact('barrios'));
+        $barrios = Barrio::all();
+        return response()->json($barrios, 200);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('barrios.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * POST /api/barrios
+     * Crea un barrio nuevo.
      */
     public function store(Request $request)
     {
-        // 1. Validar
         $request->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|unique:barrios,nombre|max:255',
         ]);
 
-        // 2. Guardar
-        \App\Models\Barrio::create($request->all());
+        $barrio = Barrio::create($request->all());
 
-        // 3. Redireccionar
-        return redirect()->route('barrios.index');
+        return response()->json([
+            'message' => 'Barrio creado correctamente',
+            'data' => $barrio
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
+     * GET /api/barrios/{id}
      */
-    public function show(Barrio $barrio)
+    public function show($id)
     {
-        //
+        $barrio = Barrio::findOrFail($id);
+        return response()->json($barrio, 200);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * PUT /api/barrios/{id}
      */
-    public function edit(Barrio $barrio)
+    public function update(Request $request, $id)
     {
-        //
+        $barrio = Barrio::findOrFail($id);
+
+        $request->validate([
+            'nombre' => 'required|string|unique:barrios,nombre,'.$barrio->id.'|max:255',
+        ]);
+
+        $barrio->update($request->all());
+
+        return response()->json([
+            'message' => 'Barrio actualizado',
+            'data' => $barrio
+        ], 200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * DELETE /api/barrios/{id}
      */
-    public function update(Request $request, Barrio $barrio)
+    public function destroy($id)
     {
-        //
-    }
+        $barrio = Barrio::findOrFail($id);
+        
+        // Opcional: Podrías validar si hay socios viviendo aquí antes de borrar
+        // if($barrio->socios()->exists()) { return error... }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Barrio $barrio)
-    {
-        //
+        $barrio->delete();
+
+        return response()->json(['message' => 'Barrio eliminado'], 200);
     }
 }
