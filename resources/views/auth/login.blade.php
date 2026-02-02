@@ -1,6 +1,23 @@
 <x-guest-layout>
+
+    @if($errors->any())
+        <div class="position-fixed top-0 start-50 translate-middle mt-5" style="z-index: 9999; min-width: 300px;">
+            <div class="alert alert-danger alert-dismissible fade show shadow-lg" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <div>
+                        @foreach ($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
+    
     <div class="container d-flex justify-content-center align-items-center vh-100 px-3">
         <div class="card-shadow border-0 p-4" style="width: 35%; max-width=420px; border-radius:12px; background-color: #ffffffff; box-shadow: 5px 5px 10px rgba(0,0,0,0.5);">
             <div class="card-body text-center">
