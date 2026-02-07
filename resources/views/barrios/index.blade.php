@@ -1,52 +1,59 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Listado de Barrios
-        </h2>
-    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                
-                {{-- Botón con estilo Bootstrap --}}
-                <div class="mb-4">
-                    <a href="{{ route('barrios.create') }}" class="btn btn-primary">
-                        + Nuevo Barrio
-                    </a>
-                </div>
-
-                {{-- Tabla con estructura para DataTables --}}
-                <table id="tabla-barrios" class="table table-striped table-hover" style="width:100%">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre del Barrio</th>
-                            <th>Acciones</th> {{-- Columna extra para futuros botones --}}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($barrios as $barrio)
-                            <tr>
-                                <td>{{ $barrio->id }}</td>
-                                <td>{{ $barrio->nombre }}</td>
-                                <td>
-                                    {{-- Botones de ejemplo pequeños --}}
-                                    <button class="btn btn-sm btn-info text-white">Editar</button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
+    <div class="container-fluid px-4 px-md-5 mt-3">    
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="p-2 fw-bold">Gestión de Barrios</h2>
             </div>
+            
+            <div>
+                <a href="{{ route('barrios.crear.web') }}" class="btn btn-primary px-3">
+                    <i class="bi bi-houses"></i> Ingresar Nuevo Barrio
+                </a>
+            </div>
+        </div>                
+
+    
+        {{-- Tabla con estructura para DataTables --}}
+        <div class="border rounded bg-white p-3">
+
+            <table id="tabla-barrios" class="table table-hover">
+                <thead class="table-light ">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Vacío: DataTables lo llena vía AJAX --}}
+                </tbody>
+            </table>
+            
         </div>
     </div>
+    
 
     {{-- Script para activar DataTables --}}
     <script type="module">
         $(document).ready(function () {
             $('#tabla-barrios').DataTable({
+                
+                ajax: {
+                    "url": "/api/barrios",
+                    "dataSrc" : ""
+                },
+                "columns": [
+                    { "data": "id" },
+                    { "data": "nombre" },
+                    { 
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return `<button class="btn btn-outline-success"> <i class="bi bi-pen"></i></button> 
+                            <button class="btn btn-outline-danger"> <i class="bi bi-trash"></i></button>`;
+                        }
+                    }
+                ],
                 // En lugar de 'url', ponemos las frases aquí directamente:
                 language: {
                     "decimal": "",

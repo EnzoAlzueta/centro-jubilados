@@ -34,13 +34,66 @@
         </div>
     </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
+    <div class="container-fluid px-md-5">
+        <h5>Próximos Alquileres</h5>
+        <div class="border rounded bg-white p-3">
+
+            <table id="tabla-alquileres" class="table table-hover">
+                <thead class="table-light ">
+                    <tr>
+                        <th scope="col">FECHA</th>
+                        <th scope="col">EVENTO</th>
+                        <th scope="col">CLIENTE</th>
+                        <th scope="col">ESTADO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Vacío: DataTables lo llena vía AJAX --}}
+                </tbody>
+            </table>
         </div>
     </div>
+    <script type="module">
+        $(document).ready(function () {
+            $('#tabla-alquileres').DataTable({
+                responsive: true,
+                ajax: {
+                    "url": "/api/alquileres",
+                    "dataSrc" : ""
+                },
+                "columns": [
+                    { "data": "Fecha" },
+                    { "data": "Evento" },
+                    { "data": "Cliente" },
+                    { "data": "Estado" }
+                    
+                ],
+                // En lugar de 'url', ponemos las frases aquí directamente:
+                language: {
+                    "decimal": "",
+                    "emptyTable": "No hay datos disponibles en la tabla",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
+                    "infoFiltered": "(filtrado de _MAX_ entradas totales)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron registros coincidentes",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    },
+                    "aria": {
+                        "sortAscending": ": activar para ordenar columna ascendente",
+                        "sortDescending": ": activar para ordenar columna descendente"
+                    }
+                }
+            });
+        });
+    </script>
 </x-app-layout>

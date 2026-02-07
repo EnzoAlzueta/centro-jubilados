@@ -15,6 +15,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/barrios', [BarrioController::class, 'index'])->name('barrio.index');
+
+    // Llamo al ingreso de la pantalla Barrios
+    Route::get('/barrios', function () {
+        return view('barrios.index');
+    })->name('barrios.web');
+
+    Route::get('/barrios/crear', function() {
+        return view('barrios.create');
+    })->name('barrios.crear.web');
+    
 });
 
 require __DIR__.'/auth.php';
