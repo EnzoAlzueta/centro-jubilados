@@ -27,6 +27,13 @@ Route::middleware('auth')->group(function () {
         return view('barrios.create');
     })->name('barrios.crear.web');
     
+    Route::get('/socios', function() {
+        return view('socios.index');
+    })->name('socios.web');
+
+    Route::get('/alquileres', function() {
+        return view('alquileres.index');
+    })->name('alquileres.web');
 });
 
 require __DIR__.'/auth.php';

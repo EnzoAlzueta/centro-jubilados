@@ -13,6 +13,8 @@ class SocioController extends Controller
     public function index()
     {
         //
+        $socios = Socio::all();
+        return response()->json($socios, 200);
     }
 
     /**

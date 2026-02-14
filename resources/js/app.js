@@ -6,7 +6,7 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
-import './bootstrap'; // Configuración base de Laravel
+// import './bootstrap'; // Configuración base de Laravel
 
 // 1. Importar Bootstrap (JS)
 import 'bootstrap';
@@ -23,3 +23,4 @@ window.DataTable = DataTable;
 // 4. Importar TomSelect
 import TomSelect from 'tom-select';
 window.TomSelect = TomSelect;
+

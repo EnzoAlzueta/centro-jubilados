@@ -18,13 +18,13 @@
                     <a class="nav-link active" aria-current="page" href="{{ route('dashboard') }}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">Socios</a>
+                        <a href="{{ route('socios.web') }}" class="nav-link">Socios</a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('barrios.web') }}" class="nav-link">Barrios</a>
                     </li>
                     <li class="nav-item">
-                    <a class="nav-link" href="#">Alquileres</a>
+                    <a class="nav-link" href="{{ route('alquileres.web')}}">Alquileres</a>
                     </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">Caja</a>
