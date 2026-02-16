@@ -8,36 +8,51 @@ use Illuminate\Http\Request;
 class UtileriaController extends Controller
 {
     /**
-     * GET /api/utilerias
-     * Devuelve la lista completa de sectores.
-     * Ideal para llenar el <select> en el formulario de alta de socio.
+     * Muestra una lista del recurso.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $utilerias = Utileria::all();
-        return response()->json($utilerias, 200);
+        if ($request->wantsJson()) {
+            $utilerias = Utileria::all();
+            return response()->json($utilerias, 200);
+        }
+
+        $utilerias = Utileria::orderBy('nombre')->get();
+        return view('utilerias.index', compact('utilerias'));
     }
 
     /**
-     * POST /api/utilerias
-     * Crea un utileria nuevo.
+     * Muestra el formulario para crear un nuevo recurso.
+     */
+    public function create()
+    {
+        return view('utilerias.create');
+    }
+
+    /**
+     * Almacena un recurso recién creado en el almacenamiento.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => 'required|string|unique:utilerias,nombre|max:255',
+            'stock_total' => 'required|integer|min:0',
         ]);
 
-        $utileria = Utileria::create($request->all());
+        $utileria = Utileria::create($validated);
 
-        return response()->json([
-            'message' => 'utileria creado correctamente',
-            'data' => $utileria
-        ], 201);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Utilería creada correctamente',
+                'data' => $utileria
+            ], 201);
+        }
+
+        return redirect()->route('utilerias.index')->with('success', 'Utilería creada correctamente.');
     }
 
     /**
-     * GET /api/utilerias/{id}
+     * Muestra el recurso especificado.
      */
     public function show($id)
     {
@@ -46,36 +61,50 @@ class UtileriaController extends Controller
     }
 
     /**
-     * PUT /api/utilerias/{id}
+     * Muestra el formulario para editar el recurso especificado.
+     */
+    public function edit($id)
+    {
+        $utileria = Utileria::findOrFail($id);
+        return view('utilerias.edit', compact('utileria'));
+    }
+
+    /**
+     * Actualiza el recurso especificado en el almacenamiento.
      */
     public function update(Request $request, $id)
     {
         $utileria = Utileria::findOrFail($id);
 
-        $request->validate([
-            'nombre' => 'required|string|unique:utilerias,nombre,'.$utileria->id.'|max:255',
+        $validated = $request->validate([
+            'nombre' => 'required|string|unique:utilerias,nombre,' . $utileria->id . '|max:255',
+            'stock_total' => 'required|integer|min:0',
         ]);
 
-        $utileria->update($request->all());
+        $utileria->update($validated);
 
-        return response()->json([
-            'message' => 'utileria actualizado',
-            'data' => $utileria
-        ], 200);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Utilería actualizada correctamente',
+                'data' => $utileria
+            ], 200);
+        }
+
+        return redirect()->route('utilerias.index')->with('success', 'Utilería actualizada correctamente.');
     }
 
     /**
-     * DELETE /api/utilerias/{id}
+     * Elimina el recurso especificado del almacenamiento.
      */
     public function destroy($id)
     {
         $utileria = Utileria::findOrFail($id);
-        
-        // Opcional: validar si hay socios viviendo aquí antes de borrar
-        // if($utileria->socios()->exists()) { return error... }
-
         $utileria->delete();
 
-        return response()->json(['message' => 'utileria eliminado'], 200);
+        if (request()->wantsJson()) {
+            return response()->json(['message' => 'Utilería eliminada correctamente'], 200);
+        }
+
+        return redirect()->route('utilerias.index')->with('success', 'Utilería eliminada correctamente.');
     }
 }

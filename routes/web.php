@@ -1,39 +1,54 @@
 <?php
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BarrioController;
+use App\Http\Controllers\SocioController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CajaController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\AlquilerController;
+use App\Http\Controllers\UtileriaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class , 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
 
-    Route::get('/barrios', [BarrioController::class, 'index'])->name('barrio.index');
+    // Barrios
+    Route::resource('barrios', BarrioController::class)->names('barrios');
 
-    // Llamo al ingreso de la pantalla Barrios
-    Route::get('/barrios', function () {
-        return view('barrios.index');
-    })->name('barrios.web');
+    // Socios
+    Route::resource('socios', SocioController::class)->names('socios');
 
-    Route::get('/barrios/crear', function() {
-        return view('barrios.create');
-    })->name('barrios.crear.web');
-    
-    Route::get('/socios', function() {
-        return view('socios.index');
-    })->name('socios.web');
+    // Alquileres
+    Route::get('/alquileres', [AlquilerController::class , 'index'])->name('alquileres.index');
+    Route::get('/alquileres/eventos', [AlquilerController::class , 'getEvents'])->name('alquileres.eventos');
+    Route::post('/alquileres', [AlquilerController::class , 'store'])->name('alquileres.store');
+    Route::get('/alquileres/{id}', [AlquilerController::class , 'show'])->name('alquileres.show');
+    Route::put('/alquileres/{id}', [AlquilerController::class , 'update'])->name('alquileres.update');
+    Route::delete('/alquileres/{id}', [AlquilerController::class , 'destroy'])->name('alquileres.destroy');
 
-    Route::get('/alquileres', function() {
-        return view('alquileres.index');
-    })->name('alquileres.web');
+    // Utilería
+    Route::resource('utilerias', UtileriaController::class)->names('utilerias');
+
+    // Caja
+    Route::get('/caja', [CajaController::class , 'index'])->name('caja.index');
+    Route::post('/caja', [CajaController::class , 'store'])->name('caja.store');
+    Route::post('/caja/pago-cuota', [CajaController::class , 'pagarCuota'])->name('caja.pagarCuota');
+
+    // Reportes
+    Route::get('/reportes', [ReporteController::class , 'index'])->name('reportes.index');
+    Route::get('/reportes/socios', [ReporteController::class , 'sociosPdf'])->name('reportes.socios');
+    Route::get('/reportes/alquileres', [ReporteController::class , 'alquileresPdf'])->name('reportes.alquileres');
+    Route::get('/reportes/caja', [ReporteController::class , 'cajaPdf'])->name('reportes.caja');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

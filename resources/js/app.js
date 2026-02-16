@@ -9,7 +9,8 @@ Alpine.start();
 // import './bootstrap'; // Configuración base de Laravel
 
 // 1. Importar Bootstrap (JS)
-import 'bootstrap';
+import * as bootstrap from 'bootstrap';
+window.bootstrap = bootstrap;
 
 // 2. Importar jQuery y hacerlo global (necesario para DataTables)
 import jQuery from 'jquery';

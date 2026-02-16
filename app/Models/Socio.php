@@ -12,14 +12,19 @@ class Socio extends Model
     protected $guarded = [];
 
     // Relación: 1 Socio vive en 1 Barrio
-    public function barrio(){
+    public function barrio()
+    {
         return $this->belongsTo(Barrio::class);
     }
 
     // Relación: 1 Socio puede tener MUCHOS Alquileres
-    public function alquileres(){
+    public function alquileres()
+    {
         return $this->hasMany(Alquiler::class);
     }
 
-
+    public function cuotas()
+    {
+        return $this->hasMany(Cuota::class);
+    }
 }

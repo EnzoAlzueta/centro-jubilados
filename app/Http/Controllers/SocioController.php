@@ -5,47 +5,110 @@ namespace App\Http\Controllers;
 use App\Models\Socio;
 use Illuminate\Http\Request;
 
+use App\Models\Barrio;
+
 class SocioController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Muestra una lista del recurso.
      */
     public function index()
     {
-        //
-        $socios = Socio::all();
-        return response()->json($socios, 200);
+        $socios = Socio::with('barrio')->get();
+        return view('socios.index', compact('socios'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Muestra el formulario para crear un nuevo recurso.
+     */
+    public function create()
+    {
+        $barrios = Barrio::all();
+        return view('socios.create', compact('barrios'));
+    }
+
+    /**
+     * Almacena un recurso recién creado en el almacenamiento.
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'dni' => 'required|string|unique:socios,dni|max:20',
+            'barrio_id' => 'required|exists:barrios,id',
+            'calle' => 'required|string|max:255',
+            'altura' => 'required|string|max:20',
+            'fecha_nacimiento' => 'required|date',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+        ]);
+
+        $ultimoSocio = Socio::latest('id')->first();
+        $proximoId = $ultimoSocio ? $ultimoSocio->id + 1 : 1;
+        $numeroSocio = str_pad($proximoId, 4, '0', STR_PAD_LEFT);
+
+        $data = $request->all();
+        $data['numero_socio'] = $numeroSocio;
+
+        Socio::create($data);
+
+        return redirect()->route('socios.index')
+            ->with('success', 'Socio creado correctamente');
     }
 
     /**
-     * Display the specified resource.
+     * Muestra el recurso especificado.
      */
     public function show(string $id)
     {
-        //
+    //
     }
 
     /**
-     * Update the specified resource in storage.
+     * Muestra el formulario para editar el recurso especificado.
+     */
+    public function edit(string $id)
+    {
+        $socio = Socio::findOrFail($id);
+        $barrios = Barrio::all();
+        return view('socios.edit', compact('socio', 'barrios'));
+    }
+
+    /**
+     * Actualiza el recurso especificado en el almacenamiento.
      */
     public function update(Request $request, string $id)
     {
-        //
+        $socio = Socio::findOrFail($id);
+
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'dni' => 'required|string|unique:socios,dni,' . $socio->id . '|max:20',
+            'barrio_id' => 'required|exists:barrios,id',
+            'calle' => 'required|string|max:255',
+            'altura' => 'required|string|max:20',
+            'fecha_nacimiento' => 'required|date',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+        ]);
+
+        $socio->update($request->all());
+
+        return redirect()->route('socios.index')
+            ->with('success', 'Socio actualizado correctamente');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina el recurso especificado del almacenamiento.
      */
     public function destroy(string $id)
     {
-        //
+        $socio = Socio::findOrFail($id);
+        $socio->delete();
+
+        return redirect()->route('socios.index')
+            ->with('success', 'Socio eliminado correctamente');
     }
 }

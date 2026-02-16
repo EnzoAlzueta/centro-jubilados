@@ -1,8 +1,8 @@
 <x-app-layout>
-    
+
     <div class="container-fluid px-4 px-md-5 mt-3">
         <h2 class="mb-4 fw-bold">Resumen General</h2>
-        
+
         <div class="row">
             <div class="col-md-3 mb-3">
                 <div class="card border-0 shadow-sm p-3">
@@ -12,7 +12,7 @@
                         </div>
                         <div>
                             <p class="text-muted mb-0 small">Total de Socios Activos</p>
-                            <h3 class="fw-bold mb-0">150</h3>
+                            <h3 class="fw-bold mb-0">{{ $totalSocios }}</h3>
                         </div>
                     </div>
                 </div>
@@ -26,7 +26,7 @@
                         </div>
                         <div>
                             <p class="text-muted mb-0 small">Ingresos del Mes (Caja)</p>
-                            <h3 class="fw-bold mb-0">$2,500.00</h3>
+                            <h3 class="fw-bold mb-0">${{ number_format($ingresosMes, 2) }}</h3>
                         </div>
                     </div>
                 </div>
@@ -48,7 +48,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- Vacío: DataTables lo llena vía AJAX --}}
+                    @foreach($alquileres as $alquiler)
+                    <tr>
+                        <td>{{ \Carbon\Carbon::parse($alquiler->fecha_evento)->format('d/m/Y') }}</td>
+                        <td>{{ $alquiler->tipo_evento }}</td>
+                        <td>
+                            @if($alquiler->socio_id)
+                            {{ $alquiler->socio->nombre }} {{ $alquiler->socio->apellido }} (Socio)
+                            @else
+                            {{ $alquiler->solicitante_externo }} (Externo)
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge border 
+                                    @if($alquiler->estado == 'reservado') border-info text-info 
+                                    @elseif($alquiler->estado == 'pagado') border-success text-success 
+                                    @else border-secondary text-secondary @endif">
+                                {{ ucfirst($alquiler->estado) }}
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -57,21 +77,10 @@
         $(document).ready(function () {
             $('#tabla-alquileres').DataTable({
                 responsive: true,
-                ajax: {
-                    "url": "/api/alquileres",
-                    "dataSrc" : ""
-                },
-                "columns": [
-                    { "data": "Fecha" },
-                    { "data": "Evento" },
-                    { "data": "Cliente" },
-                    { "data": "Estado" }
-                    
-                ],
-                // En lugar de 'url', ponemos las frases aquí directamente:
+                // Eliminamos AJAX, DataTables leerá del DOM
                 language: {
                     "decimal": "",
-                    "emptyTable": "No hay datos disponibles en la tabla",
+                    "emptyTable": "No hay alquileres próximos",
                     "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
                     "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
                     "infoFiltered": "(filtrado de _MAX_ entradas totales)",

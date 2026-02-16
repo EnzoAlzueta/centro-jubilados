@@ -3,12 +3,12 @@
     <div class="container-fluid px-4 px-md-5 mt-3">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="p-2 fw-bold">Gestión de Barrios</h2>
+                <h2 class="p-2 fw-bold">Gestión de Utilería</h2>
             </div>
 
             <div>
-                <a href="{{ route('barrios.create') }}" class="btn btn-primary px-3">
-                    <i class="bi bi-houses"></i> Ingresar Nuevo Barrio
+                <a href="{{ route('utilerias.create') }}" class="btn btn-primary px-3">
+                    <i class="bi bi-plus-circle"></i> Ingresar Nueva Utilería
                 </a>
             </div>
         </div>
@@ -29,27 +29,29 @@
         {{-- Tabla con estructura para DataTables --}}
         <div class="border rounded bg-white p-3">
 
-            <table id="tabla-barrios" class="table table-hover">
+            <table id="tabla-utilerias" class="table table-hover">
                 <thead class="table-light ">
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Nombre</th>
+                        <th scope="col">Stock Total</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($barrios as $barrio)
+                    @foreach($utilerias as $utileria)
                     <tr>
-                        <td>{{ $barrio->id }}</td>
-                        <td>{{ $barrio->nombre }}</td>
+                        <td>{{ $utileria->id }}</td>
+                        <td>{{ $utileria->nombre }}</td>
+                        <td>{{ $utileria->stock_total }}</td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="{{ route('barrios.edit', $barrio->id) }}" class="btn btn-outline-success">
+                                <a href="{{ route('utilerias.edit', $utileria->id) }}" class="btn btn-outline-success">
                                     <i class="bi bi-pen"></i>
                                 </a>
 
-                                <form action="{{ route('barrios.destroy', $barrio->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar este barrio?');"
+                                <form action="{{ route('utilerias.destroy', $utileria->id) }}" method="POST"
+                                    onsubmit="return confirm('¿Estás seguro de eliminar esta utilería?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -71,7 +73,7 @@
     {{-- Script para activar DataTables --}}
     <script type="module">
         $(document).ready(function () {
-            $('#tabla-barrios').DataTable({
+            $('#tabla-utilerias').DataTable({
                 language: {
                     "decimal": "",
                     "emptyTable": "No hay datos disponibles en la tabla",
