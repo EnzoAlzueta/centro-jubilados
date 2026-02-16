@@ -100,7 +100,7 @@
                                     <label class="form-label small text-muted text-uppercase fw-bold">Nombre
                                         Completo</label>
                                     <input type="text" name="solicitante_externo"
-                                        class="form-control @error('solicitante_externo') is-invalid @enderror"
+                                        class="form-control select2 @error('solicitante_externo') is-invalid @enderror"
                                         placeholder="Ej: Juan Pérez" value="{{ old('solicitante_externo') }}">
                                     @error('solicitante_externo') <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -250,6 +250,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            
+            // TomSelect de clientes
+            new TomSelect("#socio_id", {
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
             // Inicializar Calendario
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -431,6 +439,8 @@
                 divExterno.classList.remove('d-none');
             });
         });
+
+        
     </script>
 
     <style>

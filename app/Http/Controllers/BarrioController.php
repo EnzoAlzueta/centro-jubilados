@@ -38,7 +38,11 @@ class BarrioController extends Controller
             'nombre' => 'required|string|unique:barrios,nombre|max:255',
         ]);
 
-        Barrio::create($request->all());
+        $barrio = Barrio::create($request->all());
+     
+        if ($request->has('is_ajax')) {
+            return response()->json(['id' => $barrio->id, 'nombre' => $barrio->nombre]);
+        }
 
         return redirect()->route('barrios.index')
             ->with('success', 'Barrio creado correctamente');

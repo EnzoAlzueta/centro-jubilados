@@ -1,14 +1,16 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Crear Barrio
-        </h2>
-    </x-slot>
+   <div class="container-fluid px-4 px-md-5 mt-3">
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">Ingresar Nuevo Barrio</h2>
+            <a href="{{ route('barrios.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                    
                 <form action="{{ route('barrios.store') }}" method="POST" id="form-crear-barrio">
                     @csrf 
 
@@ -16,26 +18,12 @@
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre del Barrio</label>
                         <input type="text" 
-                               name="nombre" 
-                               id="nombre" 
-                               class="form-control" 
-                               placeholder="Ej: San Vicente" 
-                               required>
+                                name="nombre" 
+                                id="nombre" 
+                                class="form-control" 
+                                placeholder="Ej: San Vicente" 
+                                required>
                     </div>
-
-                    {{-- Campo Zona (Select para probar TomSelect) --}}
-                    {{-- Este campo es solo visual para probar la librería --}}
-                    <div class="mb-3">
-                        <label for="zona" class="form-label">Zona (Ejemplo TomSelect)</label>
-                        <select id="select-zona" name="zona" placeholder="Selecciona una zona...">
-                            <option value="">Selecciona una zona...</option>
-                            <option value="norte">Zona Norte</option>
-                            <option value="sur">Zona Sur</option>
-                            <option value="este">Zona Este</option>
-                            <option value="oeste">Zona Oeste</option>
-                        </select>
-                    </div>
-                    
                     {{-- Botones de acción --}}
                     <div class="mt-4">
                         <button type="submit" class="btn btn-success">Guardar Barrio</button>

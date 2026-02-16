@@ -1,14 +1,15 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Ingresar Nuevo Socio
-        </h2>
-    </x-slot>
+    <div class="container-fluid px-4 px-md-5 mt-3">
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">Ingresar Nuevo Socio</h2>
+            <a href="{{ route('socios.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
 
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
                 <form action="{{ route('socios.store') }}" method="POST" id="form-crear-socio">
                     @csrf
 
@@ -71,8 +72,58 @@
                         <a href="{{ route('socios.index') }}" class="btn btn-secondary">Cancelar</a>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
+     <script type="module">
+        new TomSelect("#barrio_id", {
+            persist: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            render: {
+                option_create: function(data, escape) {
+                    return `<div class="create"><i class="bi bi-plus-circle text-info"></i> Agregar barrio: <strong>${escape(data.input)}</strong></div>`;
+                },
+                no_results: function(data, escape) {
+                    return `<div class="no-results">No se encontró el barrio "${escape(data.input)}"</div>`;
+                },
+            },
+            // Si el barrio no existe, se agrega en la base y en la lista como nueva opción.
+            create: function(input, callback) {
+                const payload = { 
+                    nombre: input,
+                    is_ajax: true
+                };
+
+                fetch("{{ route('barrios.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) throw response;
+                    return response.json();
+                })
+                .then(json => {
+                    callback({ value: json.id, text: json.nombre });
+                })  
+                .catch(async (error) => {
+                    
+                    const data = await error.json();
+                    if (error.status === 422) {
+                        console.log(data.errors.nombre[0]); 
+                    } else {
+                        console.log('Error de conexión con el servidor.' + data);
+                    }
+                    callback(false); 
+                });
+            }
+        });
+    </script>
 </x-app-layout>
