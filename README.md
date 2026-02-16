@@ -72,4 +72,3 @@ O de forma manual:
 6.  `php artisan view:clear` - Para limpiar la cache de vistas.
 
 ---
-© 2026 Centro de Jubilados - Sistema de Gestión
