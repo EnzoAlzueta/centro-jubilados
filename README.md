@@ -14,7 +14,7 @@ Este es un sistema integral de gestión diseñado para administrar las operacion
 
 -   **Framework**: [Laravel 12](https://laravel.com)
 -   **Lenguaje**: PHP 8.2+
--   **Frontend**: Tailwind CSS & Blade
+-   **Frontend**: Tailwind CSS, Boostrap & Blade
 -   **Bundler**: Vite
 -   **Base de Datos**: SQLite (por defecto)
 
