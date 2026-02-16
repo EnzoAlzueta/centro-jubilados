@@ -56,6 +56,8 @@ Para poner en funcionamiento el proyecto localmente, seguí estos pasos:
 
 Para asegurar que tu entorno local esté sincronizado con los últimos cambios del repositorio, se recomienda ejecutar:
 
+NOTA: Anteponer "./vendor/bin/sail" a los comandos.
+
 ```bash
 composer setup
 php artisan db:seed # Si hay nuevos seeders necesarios
@@ -66,6 +68,8 @@ O de forma manual:
 2.  `npm install` - Si hubo cambios en `package.json`.
 3.  `php artisan migrate` - Si hay nuevas migraciones.
 4.  `npm run build` - Para actualizar los assets.
+5.  `php artisan route:clear` - Para limpiar la cache de rutas.
+6.  `php artisan view:clear` - Para limpiar la cache de vistas.
 
 ---
 © 2026 Centro de Jubilados - Sistema de Gestión
