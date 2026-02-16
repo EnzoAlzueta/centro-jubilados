@@ -181,7 +181,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Socio</label>
-                        <select name="socio_id" class="form-select" required>
+                        <select name="socio_id" id="socio_id" class="form-select" required>
                             <option value="">Seleccione un socio...</option>
                             @foreach($socios as $socio)
                             <option value="{{ $socio->id }}">{{ $socio->apellido }}, {{ $socio->nombre }} (Num: {{
@@ -230,6 +230,13 @@
     </div>
 
     <script type="module">
+        // TomSelect de socios
+            new TomSelect("#socio_id", {
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
         $(document).ready(function () {
             $('#tabla-movimientos').DataTable({
                 responsive: true,

@@ -251,7 +251,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // TomSelect de clientes
+            // TomSelect de socios
             new TomSelect("#socio_id", {
                 sortField: {
                     field: "text",
