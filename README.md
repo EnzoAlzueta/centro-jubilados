@@ -67,7 +67,7 @@ O de forma manual:
 1.  `composer install` - Si hubo cambios en `composer.json`.
 2.  `npm install` - Si hubo cambios en `package.json`.
 3.  `php artisan migrate` - Si hay nuevas migraciones.
-4.  `npm run build` - Para actualizar los assets.
+4.  `npm run build` ó `npm run dev` - Para actualizar los assets.
 5.  `php artisan route:clear` - Para limpiar la cache de rutas.
 6.  `php artisan view:clear` - Para limpiar la cache de vistas.
 
