@@ -44,12 +44,7 @@ class SocioController extends Controller
             'email' => 'nullable|email|max:255',
         ]);
 
-        $ultimoSocio = Socio::latest('id')->first();
-        $proximoId = $ultimoSocio ? $ultimoSocio->id + 1 : 1;
-        $numeroSocio = str_pad($proximoId, 4, '0', STR_PAD_LEFT);
-
         $data = $request->all();
-        $data['numero_socio'] = $numeroSocio;
 
         Socio::create($data);
 
@@ -106,9 +101,10 @@ class SocioController extends Controller
     public function destroy(string $id)
     {
         $socio = Socio::findOrFail($id);
-        $socio->delete();
+        $socio->habilitado = 0;
+        $socio->save();
 
         return redirect()->route('socios.index')
-            ->with('success', 'Socio eliminado correctamente');
+            ->with('success', 'Socio dado de baja correctamente');
     }
 }

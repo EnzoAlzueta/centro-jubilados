@@ -2,7 +2,7 @@
     <div class="container-fluid px-4 px-md-5 mt-3">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold">Ingresar Nuevo Socio</h2>
+            <h2 class="fw-bold">Editar Socio: {{$socio->apellido}}, {{$socio->nombre}}</h2>
             <a href="{{ route('socios.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Volver
             </a>
@@ -14,7 +14,28 @@
                 <form action="{{ route('socios.update', $socio->id) }}" method="POST" id="form-editar-socio">
                     @csrf
                     @method('PUT')
-
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="numero_socio" class="form-label">Numero Socio</label>
+                            <input type="text" name="numero_socio" class="form-control" id="numero_socio" readonly value=" {{ old('numero_socio', $socio->numero_socio) }} ">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <!-- Se agrega este hidden, ya que el checkbox no reconoce cuando no esta seleccionado y pasa como null
+                                 de esta forma, pasa como 0 cuando el input con valor "1" esta deshabilitado. -->
+                                <input type="hidden" name="habilitado" value="0">
+                               <input class="form-check-input" 
+                                type="checkbox" 
+                                name="habilitado"
+                                id="habilitado"
+                                value="1"
+                                @checked(old('habilitado', $socio->habilitado) == 1)>  
+                                <label class="form-check-label" for="habilitado">
+                                    Habilitado 
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="nombre" class="form-label">Nombre</label>

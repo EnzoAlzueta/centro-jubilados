@@ -14,7 +14,11 @@
                     @csrf
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label for="numero_socio" class="form-label">Número Socio</label>
+                            <input type="number" name="numero_socio" id="numero_socio" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
                             <input type="text" name="nombre" id="nombre" class="form-control" required>
                         </div>
