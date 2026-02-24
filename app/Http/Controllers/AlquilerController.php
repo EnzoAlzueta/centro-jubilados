@@ -75,26 +75,6 @@ class AlquilerController extends Controller
             'utilerias.*.cantidad' => 'nullable|integer|min:0'
         ]);
 
-        // Validar stock disponible de utilería
-        if (!empty($request->utilerias)) {
-            foreach ($request->utilerias as $item) {
-                if (isset($item['cantidad']) && $item['cantidad'] > 0) {
-                    $utileria = Utileria::find($item['id']);
-                    $stockDisponible = $utileria->getStockDisponible();
-                    
-                    if ($item['cantidad'] > $stockDisponible) {
-                        $errorMsg = "Stock insuficiente para '{$utileria->nombre}'. Disponible: {$stockDisponible}, Solicitado: {$item['cantidad']}";
-                        
-                        if ($request->wantsJson()) {
-                            return response()->json(['error' => $errorMsg], 422);
-                        }
-                        
-                        return back()->withErrors(['utilerias' => $errorMsg])->withInput();
-                    }
-                }
-            }
-        }
-
         try {
             return DB::transaction(function () use ($validated, $request) {
                 $alquiler = Alquiler::create([
@@ -176,13 +156,53 @@ class AlquilerController extends Controller
         return response()->json(['message' => 'Alquiler eliminado'], 200);
     }
 
+    public function registrarPago(Request $request, $id)
+    {
+        $alquiler = Alquiler::findOrFail($id);
+        $pendiente = $alquiler->precio - $alquiler->seña_pagada;
+
+        $validated = $request->validate([
+            'monto' => 'required|numeric|min:0.01|max:'.$pendiente,
+        ]);
+
+        try {
+            return DB::transaction(function () use ($validated, $alquiler) {
+                $alquiler->seña_pagada += $validated['monto'];
+                
+                if ($alquiler->seña_pagada >= $alquiler->precio) {
+                    $alquiler->estado = 'confirmado';
+                }
+                $alquiler->save();
+
+                Movimiento::create([
+                    'fecha' => now()->toDateString(),
+                    'tipo' => 'ingreso',
+                    'concepto' => "Pago Saldo Alquiler: " . ($alquiler->socio_id ? $alquiler->socio->apellido : $alquiler->solicitante_externo) . " - " . $alquiler->tipo_evento,
+                    'monto' => $validated['monto'],
+                    'categoria' => 'alquiler',
+                    'referencia_id' => $alquiler->id,
+                    'referencia_type' => Alquiler::class
+                ]);
+
+                return response()->json([
+                    'message' => 'Pago registrado con éxito',
+                    'nuevo_pendiente' => $alquiler->precio - $alquiler->seña_pagada,
+                    'estado' => $alquiler->estado
+                ], 200);
+            });
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al registrar el pago: ' . $e->getMessage()], 500);
+        }
+    }
+
     private function getColorByEstado($estado)
     {
         return match ($estado) {
-            'reservado' => '#0dcaf0', // info
-            'pagado' => '#198754',    // success
-            'cancelado' => '#dc3545',  // danger
-            default => '#6c757d'       // secondary
+            'reservado' => '#0dcaf0',  // info (cyan)
+            'confirmado' => '#198754', // success (green)
+            'cancelado' => '#dc3545',  // danger (red)
+            'finalizado' => '#6c757d', // secondary (grey)
+            default => '#6c757d'
         };
     }
 }

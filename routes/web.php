@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/alquileres', [AlquilerController::class , 'store'])->name('alquileres.store');
     Route::get('/alquileres/{id}', [AlquilerController::class , 'show'])->name('alquileres.show');
     Route::put('/alquileres/{id}', [AlquilerController::class , 'update'])->name('alquileres.update');
+    Route::post('/alquileres/{id}/pagar-saldo', [AlquilerController::class , 'registrarPago'])->name('alquileres.pagar-saldo');
     Route::delete('/alquileres/{id}', [AlquilerController::class , 'destroy'])->name('alquileres.destroy');
 
     // Utilería

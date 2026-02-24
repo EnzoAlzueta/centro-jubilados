@@ -16,6 +16,9 @@
                 </div>
                 @endif
             </div>
+
+            {{-- Contenedor para alertas dinámicas (AJAX) --}}
+            <div id="ajax-alert-container"></div>
         </div>
 
         <div class="row g-4">
@@ -151,24 +154,20 @@
                                 </div>
                             </div>
 
-                            <h6 class="fw-bold mb-3 border-bottom pb-2">Utilería Requerida</h6>
-                            <div class="row row-cols-2 g-3 mb-4" id="utileria-container">
-                                @foreach($utilerias as $util)
-                                <div class="col">
-                                    <label class="form-label small text-muted">
-                                        {{ $util->nombre }}
-                                        <span class="badge bg-info text-dark">Disponible: {{ $util->getStockDisponible()
-                                            }}</span>
-                                    </label>
-                                    <input type="number" name="utilerias[{{ $loop->index }}][cantidad]"
-                                        class="form-control shadow-none" placeholder="0" min="0"
-                                        max="{{ $util->getStockDisponible() }}"
-                                        value="{{ old('utilerias.'.$loop->index.'.cantidad', 0) }}">
-                                    <input type="hidden" name="utilerias[{{ $loop->index }}][id]"
-                                        value="{{ $util->id }}">
+                            <div class="mb-4">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Utilería
+                                    Requerida</label>
+                                <div class="d-flex flex-column gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                        data-bs-toggle="modal" data-bs-target="#utileriaModal">
+                                        <i class="bi bi-plus-circle me-1"></i> Seleccionar Utilería
+                                    </button>
+                                    <div id="utileria-summary" class="small text-muted text-center italic">
+                                        0 artículos seleccionados
+                                    </div>
                                 </div>
-                                @endforeach
                             </div>
+
 
                             <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
                                 <i class="bi bi-calendar-check me-2"></i> Confirmar Reserva
@@ -222,11 +221,30 @@
                         </li>
                     </ul>
 
-                    <div id="event-utilerias-section" class="d-none">
+                    <div id="event-utilerias-section" class="d-none mb-4">
                         <h6 class="fw-bold mb-2 small text-uppercase text-muted">Utilería Asignada</h6>
                         <ul id="event-utilerias-list" class="list-group list-group-flush border rounded-3 small">
                             <!-- Se carga vía JS -->
                         </ul>
+                    </div>
+
+                    <div id="payment-section" class="d-none border-top pt-4">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted">Registrar Pago de Saldo</h6>
+                        <form id="form-registrar-pago" class="row g-2">
+                            @csrf
+                            <div class="col-8">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="monto" id="pago_monto" class="form-control" step="0.01"
+                                        placeholder="Monto a pagar" required>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-cash-coin me-1"></i> Pagar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
@@ -250,7 +268,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
+
             // TomSelect de socios
             new TomSelect("#socio_id", {
                 sortField: {
@@ -338,6 +356,16 @@
                                 utilSection.classList.add('d-none');
                             }
 
+                            const pendiente = alquiler.precio - alquiler.seña_pagada;
+                            const paymentSection = document.getElementById('payment-section');
+                            if (pendiente > 0) {
+                                paymentSection.classList.remove('d-none');
+                                document.getElementById('pago_monto').value = pendiente;
+                                document.getElementById('pago_monto').max = pendiente;
+                            } else {
+                                paymentSection.classList.add('d-none');
+                            }
+
                             const modalEl = document.getElementById('eventModal');
                             const modal = new window.bootstrap.Modal(modalEl);
                             modal.show();
@@ -347,6 +375,48 @@
                             alert('No se pudieron cargar los detalles de la reserva.');
                         });
                 }
+            });
+
+            // Registrar Pago de Saldo
+            document.getElementById('form-registrar-pago').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const alquilerId = document.getElementById('btn-editar-alquiler').getAttribute('data-id');
+                const formData = new FormData(this);
+
+                fetch(`/alquileres/${alquilerId}/pagar-saldo`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // Cerrar modal actual
+                            const modalInstance = window.bootstrap.Modal.getInstance(document.getElementById('eventModal'));
+                            if (modalInstance) modalInstance.hide();
+
+                            // Mostrar mensaje de éxito en el contenedor específico
+                            const alertContainer = document.getElementById('ajax-alert-container');
+                            const alertHtml = `
+                            <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+                                <i class="bi bi-check-circle me-2"></i> ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                            alertContainer.innerHTML = alertHtml;
+
+                            // Recargar calendario
+                            calendar.refetchEvents();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Payment error:', error);
+                        alert('Error al procesar el pago.');
+                    });
             });
             calendar.render();
 
@@ -438,9 +508,63 @@
                 divSocio.classList.add('d-none');
                 divExterno.classList.remove('d-none');
             });
+
+            // Lógica para actualizar el resumen de utilería
+            const utilInputs = document.querySelectorAll('.utileria-input');
+            const summaryDiv = document.getElementById('utileria-summary');
+
+            function updateUtileriaSummary() {
+                let count = 0;
+                utilInputs.forEach(input => {
+                    if (parseInt(input.value) > 0) count++;
+                });
+
+                if (count === 0) {
+                    summaryDiv.textContent = '0 artículos seleccionados';
+                    summaryDiv.classList.add('text-muted');
+                    summaryDiv.classList.remove('text-primary', 'fw-bold');
+                } else {
+                    summaryDiv.textContent = count + (count === 1 ? ' artículo seleccionado' : ' artículos seleccionados');
+                    summaryDiv.classList.remove('text-muted');
+                    summaryDiv.classList.add('text-primary', 'fw-bold');
+                }
+            }
+
+            utilInputs.forEach(input => {
+                input.addEventListener('input', updateUtileriaSummary);
+            });
+
+            // Feedback al confirmar selección
+            document.querySelector('#utileriaModal .btn-primary').addEventListener('click', function () {
+                const count = Array.from(utilInputs).filter(i => parseInt(i.value) > 0).length;
+                if (count > 0) {
+                    // Podríamos usar un toast, pero por ahora un pequeño feedback visual en el botón principal
+                    const btn = document.querySelector('[data-bs-target="#utileriaModal"]');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="bi bi-check-circle me-1"></i> ¡Utilería Agregada!';
+                    btn.classList.replace('btn-outline-primary', 'btn-success');
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.replace('btn-success', 'btn-outline-primary');
+                    }, 2000);
+                }
+            });
+
+            // Ejecutar al cargar por si hay valores previos
+            updateUtileriaSummary();
+
+            // Asegurarse de que el modal no rompa el scroll cuando hay muchos items
+            const utilModal = document.getElementById('utileriaModal');
+            utilModal.addEventListener('hidden.bs.modal', function () {
+                // Forzar limpieza de clases de Bootstrap si es necesario
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+            });
         });
 
-        
+
     </script>
 
     <style>
@@ -486,4 +610,46 @@
             border-radius: 0.375rem;
         }
     </style>
+
+    {{-- Modal para selección de Utilería --}}
+    <div class="modal fade" id="utileriaModal" tabindex="-1" aria-labelledby="utileriaModalLabel" aria-hidden="true"
+        data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold" id="utileriaModalLabel">Seleccionar Utilería</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto;">
+                    <div class="row row-cols-1 row-cols-md-2 g-3" id="utileria-container">
+                        @foreach($utilerias as $util)
+                        <div class="col">
+                            <div class="p-3 border rounded-3 bg-light bg-opacity-50">
+                                <label class="form-label small text-muted fw-bold mb-2 d-block">
+                                    {{ $util->nombre }}
+                                    <span class="badge bg-secondary float-end">Stock Total: {{ $util->stock_total
+                                        }}</span>
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" name="utilerias[{{ $loop->index }}][cantidad]"
+                                        form="form-alquiler" class="form-control shadow-none utileria-input"
+                                        placeholder="0" min="0"
+                                        value="{{ old('utilerias.'.$loop->index.'.cantidad', 0) }}"
+                                        data-id="{{ $util->id }}">
+                                    <span class="input-group-text">unid.</span>
+                                </div>
+                                <input type="hidden" name="utilerias[{{ $loop->index }}][id]" form="form-alquiler"
+                                    value="{{ $util->id }}">
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pb-4 px-4">
+                    <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Confirmar
+                        Selección</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>

@@ -32,6 +32,10 @@ class ProfileController extends Controller
             $request->user()->email_verified_at = null;
         }
 
+        if ($request->filled('security_answer')) {
+            $request->user()->security_answer = \Illuminate\Support\Facades\Hash::make($request->security_answer);
+        }
+
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

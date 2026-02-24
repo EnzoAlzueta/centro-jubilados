@@ -55,6 +55,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Enzo Admin',
             'email' => 'admin@admin.com',
             'password' => bcrypt('enzoadmin'),
+            'security_question' => '¿Cuál es el nombre de la mascota del sistema?',
+            'security_answer' => bcrypt('tobi'),
         ]);
     }
 }

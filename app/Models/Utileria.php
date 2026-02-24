@@ -27,10 +27,6 @@ class Utileria extends Model
      */
     public function getStockDisponible()
     {
-        $cantidadReservada = $this->alquileres()
-            ->whereIn('estado', ['reservado', 'confirmado', 'finalizado'])
-            ->sum('alquiler_utileria.cantidad');
-
-        return $this->stock_total - $cantidadReservada;
+        return $this->stock_total;
     }
 }
