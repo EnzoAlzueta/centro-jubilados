@@ -24,12 +24,12 @@
                                 <!-- Se agrega este hidden, ya que el checkbox no reconoce cuando no esta seleccionado y pasa como null
                                  de esta forma, pasa como 0 cuando el input con valor "1" esta deshabilitado. -->
                                 <input type="hidden" name="habilitado" value="0">
-                               <input class="form-check-input" 
-                                type="checkbox" 
-                                name="habilitado"
-                                id="habilitado"
-                                value="1"
-                                @checked(old('habilitado', $socio->habilitado) == 1)>  
+                                <input class="form-check-input" 
+                                    type="checkbox" 
+                                    name="habilitado"
+                                    id="habilitado"
+                                    value="1"
+                                    @checked(old('habilitado', $socio->habilitado) == 1)>  
                                 <label class="form-check-label" for="habilitado">
                                     Habilitado 
                                 </label>
@@ -107,4 +107,56 @@
             </div>
         </div>
     </div>
+
+    <script type="module">
+        new TomSelect("#barrio_id", {
+            persist: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            render: {
+                option_create: function(data, escape) {
+                    return `<div class="create"><i class="bi bi-plus-circle text-info"></i> Agregar barrio: <strong>${escape(data.input)}</strong></div>`;
+                },
+                no_results: function(data, escape) {
+                    return `<div class="no-results">No se encontró el barrio "${escape(data.input)}"</div>`;
+                },
+            },
+            // Si el barrio no existe, se agrega en la base y en la lista como nueva opción.
+            create: function(input, callback) {
+                const payload = { 
+                    nombre: input,
+                    is_ajax: true
+                };
+
+                fetch("{{ route('barrios.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) throw response;
+                    return response.json();
+                })
+                .then(json => {
+                    callback({ value: json.id, text: json.nombre });
+                })  
+                .catch(async (error) => {
+                    
+                    const data = await error.json();
+                    if (error.status === 422) {
+                        console.log(data.errors.nombre[0]); 
+                    } else {
+                        console.log('Error de conexión con el servidor.' + data);
+                    }
+                    callback(false); 
+                });
+            }
+        });
+    </script>
 </x-app-layout>
