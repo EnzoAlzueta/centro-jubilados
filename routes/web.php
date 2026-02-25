@@ -24,9 +24,11 @@ Route::middleware('auth')->group(function () {
 
     // Barrios
     Route::resource('barrios', BarrioController::class)->names('barrios');
+    Route::resource('calles', App\Http\Controllers\CalleController::class)->names('calles');
 
     // Socios
     Route::resource('socios', SocioController::class)->names('socios');
+    Route::get('/socios/{socio}/cartola', [SocioController::class , 'cartola'])->name('socios.cartola');
 
     // Alquileres
     Route::get('/alquileres', [AlquilerController::class , 'index'])->name('alquileres.index');

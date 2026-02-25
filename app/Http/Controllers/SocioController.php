@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Barrio;
+use App\Models\Calle; // Added this line
 use App\Models\Socio;
 use Illuminate\Http\Request;
 
-use App\Models\Barrio;
 
 class SocioController extends Controller
 {
@@ -24,7 +25,8 @@ class SocioController extends Controller
     public function create()
     {
         $barrios = Barrio::all();
-        return view('socios.create', compact('barrios'));
+        $calles = Calle::where('habilitado', true)->get();
+        return view('socios.create', compact('barrios', 'calles'));
     }
 
     /**
@@ -33,11 +35,12 @@ class SocioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'numero_socio' => 'required|integer|unique:socios,numero_socio',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'dni' => 'required|string|unique:socios,dni|max:20',
             'barrio_id' => 'required|exists:barrios,id',
-            'calle' => 'required|string|max:255',
+            'calle_id' => 'required|exists:calles,id', // Ensured this is calle_id
             'altura' => 'required|string|max:20',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
@@ -67,7 +70,8 @@ class SocioController extends Controller
     {
         $socio = Socio::findOrFail($id);
         $barrios = Barrio::all();
-        return view('socios.edit', compact('socio', 'barrios'));
+        $calles = Calle::where('habilitado', true)->get(); // Added this line
+        return view('socios.edit', compact('socio', 'barrios', 'calles')); // Added 'calles' to compact
     }
 
     /**
@@ -78,11 +82,12 @@ class SocioController extends Controller
         $socio = Socio::findOrFail($id);
 
         $request->validate([
+            'numero_socio' => 'required|integer|unique:socios,numero_socio,' . $socio->id,
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'dni' => 'required|string|unique:socios,dni,' . $socio->id . '|max:20',
             'barrio_id' => 'required|exists:barrios,id',
-            'calle' => 'required|string|max:255',
+            'calle_id' => 'required|exists:calles,id', // Changed 'calle' to 'calle_id' and added exists rule
             'altura' => 'required|string|max:20',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
@@ -106,5 +111,18 @@ class SocioController extends Controller
 
         return redirect()->route('socios.index')
             ->with('success', 'Socio dado de baja correctamente');
+    }
+
+    /**
+     * Genera la cartola de pagos en formato PDF.
+     */
+    public function cartola(string $id)
+    {
+        $socio = Socio::with(['barrio', 'calle'])->findOrFail($id);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('socios.pdf.cartola', compact('socio'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Cartola_Socio_' . $socio->numero_socio . '.pdf');
     }
 }

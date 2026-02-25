@@ -17,6 +17,11 @@ class Socio extends Model
         return $this->belongsTo(Barrio::class);
     }
 
+    public function calle()
+    {
+        return $this->belongsTo(Calle::class);
+    }
+
     // Relación: 1 Socio puede tener MUCHOS Alquileres
     public function alquileres()
     {

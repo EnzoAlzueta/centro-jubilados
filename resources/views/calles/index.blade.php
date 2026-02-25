@@ -1,13 +1,14 @@
 <x-app-layout>
+
     <div class="container-fluid px-4 px-md-5 mt-3">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="p-2 fw-bold">Gestión de Socios</h2>
+                <h2 class="p-2 fw-bold">Gestión de Calles</h2>
             </div>
 
             <div>
-                <a href="{{ route('socios.create') }}" class="btn btn-primary px-3">
-                    <i class="bi bi-person-plus"></i> Ingresar Nuevo Socio
+                <a href="{{ route('calles.create') }}" class="btn btn-primary px-3">
+                    <i class="bi bi-signpost-split"></i> Ingresar Nueva Calle
                 </a>
             </div>
         </div>
@@ -27,42 +28,37 @@
         {{-- Tabla con estructura para DataTables --}}
         <div class="border rounded bg-white p-3">
 
-            <table id="tabla-socios" class="table table-hover align-middle">
+            <table id="tabla-calles" class="table table-hover">
                 <thead class="table-light ">
                     <tr>
-                        <th scope="col">N° Socio</th>
-                        <th scope="col">Nombre y Apellido</th>
-                        <th scope="col">DNI</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nombre</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($socios as $socio)
+                    @foreach($calles as $calle)
                     <tr>
-                        <td>{{ $socio->numero_socio }}</td>
-                        <td>{{ $socio->nombre }} {{ $socio->apellido }}</td>
-                        <td>{{ $socio->dni }}</td>
+                        <td>{{ $calle->id }}</td>
+                        <td>{{ $calle->nombre }}</td>
                         <td>
-                            @if($socio->habilitado == 1)
+                            @if($calle->habilitado == 1)
                             <span class="bg-success-subtle text-success border border-success-subtle px-2 rounded">
-                                Activo </span>
+                                Activa </span>
                             @else
                             <span class="bg-danger-subtle text-danger border border-danger-subtle px-2 rounded">
-                                Deshabilitado </span>
+                                Deshabilitada </span>
                             @endif
                         </td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="{{ route('socios.cartola', $socio->id) }}" target="_blank"
-                                    class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover me-3">
-                                    Generar Cartola </a>
-                                <a href="{{ route('socios.edit', $socio->id) }}" class="btn btn-outline-success">
+                                <a href="{{ route('calles.edit', $calle->id) }}" class="btn btn-outline-success">
                                     <i class="bi bi-pen"></i>
                                 </a>
 
-                                <form action="{{ route('socios.destroy', $socio->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar este socio?');"
+                                <form action="{{ route('calles.destroy', $calle->id) }}" method="POST"
+                                    onsubmit="return confirm('¿Estás seguro de deshabilitar esta calle?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -84,7 +80,7 @@
     {{-- Script para activar DataTables --}}
     <script type="module">
         $(document).ready(function () {
-            $('#tabla-socios').DataTable({
+            $('#tabla-calles').DataTable({
                 language: {
                     "decimal": "",
                     "emptyTable": "No hay datos disponibles en la tabla",

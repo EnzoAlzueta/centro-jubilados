@@ -22,8 +22,15 @@
                     <li class="nav-item">
                         <a href="{{ route('socios.index') }}" class="nav-link">Socios</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('barrios.index') }}" class="nav-link">Barrios</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Barrios
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('barrios.index') }}">Gestión de Barrios</a></li>
+                            <li><a class="dropdown-item" href="{{ route('calles.index') }}">Gestión de Calles</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
