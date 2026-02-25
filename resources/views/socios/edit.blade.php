@@ -30,20 +30,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-check">
-                                <!-- Se agrega este hidden, ya que el checkbox no reconoce cuando no esta seleccionado y pasa como null
-                                 de esta forma, pasa como 0 cuando el input con valor "1" esta deshabilitado. -->
                                 <input type="hidden" name="habilitado" value="0">
-<<<<<<< HEAD
                                 <input class="form-check-input" type="checkbox" name="habilitado" id="habilitado"
                                     value="1" @checked(old('habilitado', $socio->habilitado) == 1)>
-=======
-                                <input class="form-check-input" 
-                                    type="checkbox" 
-                                    name="habilitado"
-                                    id="habilitado"
-                                    value="1"
-                                    @checked(old('habilitado', $socio->habilitado) == 1)>  
->>>>>>> 0ef13770ca7a615fb2294eab806a500a32d2f269
                                 <label class="form-check-label" for="habilitado">
                                     Habilitado
                                 </label>
@@ -128,19 +117,63 @@
     </div>
 
     <script type="module">
-<<<<<<< HEAD
-        // Configuración de TomSelect para Calle
-        new TomSelect("#calle_id", {
-=======
+        // --- TomSelect para Barrio (Código de tu compañera) ---
         new TomSelect("#barrio_id", {
->>>>>>> 0ef13770ca7a615fb2294eab806a500a32d2f269
             persist: false,
             sortField: {
                 field: "text",
                 direction: "asc"
             },
             render: {
-<<<<<<< HEAD
+                option_create: function (data, escape) {
+                    return `<div class="create"><i class="bi bi-plus-circle text-info"></i> Agregar barrio: <strong>${escape(data.input)}</strong></div>`;
+                },
+                no_results: function (data, escape) {
+                    return `<div class="no-results">No se encontró el barrio "${escape(data.input)}"</div>`;
+                },
+            },
+            create: function (input, callback) {
+                const payload = {
+                    nombre: input,
+                    is_ajax: true
+                };
+
+                fetch("{{ route('barrios.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => {
+                        if (!response.ok) throw response;
+                        return response.json();
+                    })
+                    .then(json => {
+                        callback({ value: json.id, text: json.nombre });
+                    })
+                    .catch(async (error) => {
+                        const data = await error.json();
+                        if (error.status === 422) {
+                            console.log(data.errors.nombre[0]);
+                        } else {
+                            console.log('Error de conexión con el servidor.' + data);
+                        }
+                        callback(false);
+                    });
+            }
+        });
+
+        // --- TomSelect para Calle (Tu código) ---
+        new TomSelect("#calle_id", {
+            persist: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            render: {
                 option_create: function (data, escape) {
                     return `<div class="create"><i class="bi bi-plus-circle text-info"></i> Agregar calle: <strong>${escape(data.input)}</strong></div>`;
                 },
@@ -156,28 +189,10 @@
                 };
 
                 fetch("{{ route('calles.store') }}", {
-=======
-                option_create: function(data, escape) {
-                    return `<div class="create"><i class="bi bi-plus-circle text-info"></i> Agregar barrio: <strong>${escape(data.input)}</strong></div>`;
-                },
-                no_results: function(data, escape) {
-                    return `<div class="no-results">No se encontró el barrio "${escape(data.input)}"</div>`;
-                },
-            },
-            // Si el barrio no existe, se agrega en la base y en la lista como nueva opción.
-            create: function(input, callback) {
-                const payload = { 
-                    nombre: input,
-                    is_ajax: true
-                };
-
-                fetch("{{ route('barrios.store') }}", {
->>>>>>> 0ef13770ca7a615fb2294eab806a500a32d2f269
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-<<<<<<< HEAD
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify(payload)
@@ -193,29 +208,6 @@
                         console.log('Error creando la calle.');
                         callback(false);
                     });
-=======
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' 
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => {
-                    if (!response.ok) throw response;
-                    return response.json();
-                })
-                .then(json => {
-                    callback({ value: json.id, text: json.nombre });
-                })  
-                .catch(async (error) => {
-                    
-                    const data = await error.json();
-                    if (error.status === 422) {
-                        console.log(data.errors.nombre[0]); 
-                    } else {
-                        console.log('Error de conexión con el servidor.' + data);
-                    }
-                    callback(false); 
-                });
->>>>>>> 0ef13770ca7a615fb2294eab806a500a32d2f269
             }
         });
     </script>
