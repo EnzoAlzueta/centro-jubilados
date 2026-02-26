@@ -23,7 +23,7 @@ class AlquilerController extends Controller
         }
 
         $socios = Socio::where('habilitado', 1)->orderBy('apellido')->get();
-        $sectores = Sector::all();
+        $sectores = Sector::where('habilitado', 1)->get();
         $utilerias = Utileria::all();
 
         return view('alquileres.index', compact('socios', 'sectores', 'utilerias'));
@@ -63,7 +63,7 @@ class AlquilerController extends Controller
     {
         $validated = $request->validate([
             'sector_id' => 'required|exists:sectors,id',
-            'fecha_evento' => 'required|date',
+            'fecha_evento' => 'required|date|after_or_equal:1900-01-01',
             'tipo_evento' => 'required|string',
             'precio' => 'required|numeric|min:0',
             'seña_pagada' => 'numeric|min:0',
@@ -148,12 +148,33 @@ class AlquilerController extends Controller
         return redirect()->route('alquileres.index')->with('success', 'Alquiler actualizado.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $alquiler = Alquiler::findOrFail($id);
-        $alquiler->delete();
 
-        return response()->json(['message' => 'Alquiler eliminado'], 200);
+        try {
+            DB::transaction(function () use ($alquiler, $request) {
+                $alquiler->estado = 'cancelado';
+                $alquiler->save();
+
+                // Si se solicita devolución de la seña/pago y hay un monto válido
+                if ($request->has('devolucion') && $request->devolucion == true && $alquiler->seña_pagada > 0) {
+                    Movimiento::create([
+                        'fecha' => now()->toDateString(),
+                        'tipo' => 'egreso',
+                        'concepto' => "Devolución Cancelación: " . ($alquiler->socio_id ? $alquiler->socio->apellido : $alquiler->solicitante_externo) . " - " . $alquiler->tipo_evento,
+                        'monto' => $alquiler->seña_pagada,
+                        'categoria' => 'alquiler',
+                        'referencia_id' => $alquiler->id,
+                        'referencia_type' => Alquiler::class
+                    ]);
+                }
+            });
+
+            return response()->json(['message' => 'Alquiler cancelado exitosamente'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al cancelar: ' . $e->getMessage()], 500);
+        }
     }
 
     public function registrarPago(Request $request, $id)

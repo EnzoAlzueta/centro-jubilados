@@ -6,7 +6,17 @@
                 <h2 class="p-2 fw-bold">Gestión de Utilería</h2>
             </div>
 
-            <div>
+            <div class="d-flex gap-2">
+                @if($showDisabled ?? false)
+                <a href="{{ route('utilerias.index') }}" class="btn btn-outline-primary px-3">
+                    <i class="bi bi-box-seam"></i> Ver Solo Activos
+                </a>
+                @else
+                <a href="{{ route('utilerias.index', ['ver_deshabilitadas' => 1]) }}"
+                    class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-box-seam"></i> Ver Todos (Incluir Deshabilitados)
+                </a>
+                @endif
                 <a href="{{ route('utilerias.create') }}" class="btn btn-primary px-3">
                     <i class="bi bi-plus-circle"></i> Ingresar Nueva Utilería
                 </a>
@@ -35,21 +45,32 @@
                         <th scope="col">ID</th>
                         <th scope="col">Nombre</th>
                         <th scope="col">Stock Total</th>
+                        <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($utilerias as $utileria)
-                    <tr>
+                    <tr class="{{ $utileria->habilitado == 0 ? 'opacity-50 grayscale' : '' }}">
                         <td>{{ $utileria->id }}</td>
                         <td>{{ $utileria->nombre }}</td>
                         <td>{{ $utileria->stock_total }}</td>
+                        <td>
+                            @if($utileria->habilitado == 1)
+                            <span class="bg-success-subtle text-success border border-success-subtle px-2 rounded">
+                                Activo </span>
+                            @else
+                            <span class="bg-danger-subtle text-danger border border-danger-subtle px-2 rounded">
+                                Deshabilitado </span>
+                            @endif
+                        </td>
                         <td>
                             <div class="d-flex gap-2">
                                 <a href="{{ route('utilerias.edit', $utileria->id) }}" class="btn btn-outline-success">
                                     <i class="bi bi-pen"></i>
                                 </a>
 
+                                @if($utileria->habilitado == 1)
                                 <form action="{{ route('utilerias.destroy', $utileria->id) }}" method="POST"
                                     onsubmit="return confirm('¿Estás seguro de eliminar esta utilería?');"
                                     style="display:inline;">
@@ -59,6 +80,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

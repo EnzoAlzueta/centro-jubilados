@@ -49,7 +49,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
                             <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control"
-                                value="{{ old('fecha_nacimiento') }}" required>
+                                value="{{ old('fecha_nacimiento') }}" required min="1900-01-01">
                         </div>
                     </div>
 

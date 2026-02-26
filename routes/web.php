@@ -39,8 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/alquileres/{id}/pagar-saldo', [AlquilerController::class , 'registrarPago'])->name('alquileres.pagar-saldo');
     Route::delete('/alquileres/{id}', [AlquilerController::class , 'destroy'])->name('alquileres.destroy');
 
-    // Utilería
+    // Utilería y Sectores
     Route::resource('utilerias', UtileriaController::class)->names('utilerias');
+    Route::resource('sectores', App\Http\Controllers\SectorController::class)->names('sectores');
 
     // Caja
     Route::get('/caja', [CajaController::class , 'index'])->name('caja.index');

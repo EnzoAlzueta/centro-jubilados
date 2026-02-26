@@ -25,8 +25,9 @@
                             <i class="bi bi-wallet2 fs-4"></i>
                         </div>
                         <div>
-                            <p class="text-muted mb-0 small">Ingresos del Mes (Caja)</p>
-                            <h3 class="fw-bold mb-0">${{ number_format($ingresosMes, 2) }}</h3>
+                            <p class="text-muted mb-0 small">Saldo del Mes (Caja)</p>
+                            <h3 class="fw-bold mb-0 text-{{ $saldoMes >= 0 ? 'success' : 'danger' }}">${{
+                                number_format($saldoMes, 2) }}</h3>
                         </div>
                     </div>
                 </div>
@@ -63,6 +64,7 @@
                             <span class="badge border 
                                     @if($alquiler->estado == 'reservado') border-info text-info 
                                     @elseif($alquiler->estado == 'pagado') border-success text-success 
+                                    @elseif($alquiler->estado == 'cancelado') border-danger text-danger
                                     @else border-secondary text-secondary @endif">
                                 {{ ucfirst($alquiler->estado) }}
                             </span>

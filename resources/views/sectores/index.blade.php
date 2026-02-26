@@ -1,23 +1,24 @@
 <x-app-layout>
+
     <div class="container-fluid px-4 px-md-5 mt-3">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="p-2 fw-bold">Gestión de Socios</h2>
+                <h2 class="p-2 fw-bold">Gestión de Sector</h2>
             </div>
 
             <div class="d-flex gap-2">
-                @if($showDisabled)
-                <a href="{{ route('socios.index') }}" class="btn btn-outline-primary px-3">
-                    <i class="bi bi-person-check"></i> Ver Solo Activos
+                @if($showDisabled ?? false)
+                <a href="{{ route('sectores.index') }}" class="btn btn-outline-primary px-3">
+                    <i class="bi bi-box-seam"></i> Ver Solo Activos
                 </a>
                 @else
-                <a href="{{ route('socios.index', ['ver_deshabilitados' => 1]) }}"
+                <a href="{{ route('sectores.index', ['ver_deshabilitadas' => 1]) }}"
                     class="btn btn-outline-secondary px-3">
-                    <i class="bi bi-people"></i> Ver Todos (Incluir Deshabilitados)
+                    <i class="bi bi-box-seam"></i> Ver Todos (Incluir Deshabilitados)
                 </a>
                 @endif
-                <a href="{{ route('socios.create') }}" class="btn btn-primary px-3">
-                    <i class="bi bi-person-plus"></i> Ingresar Nuevo Socio
+                <a href="{{ route('sectores.create') }}" class="btn btn-primary px-3">
+                    <i class="bi bi-plus-circle"></i> Ingresar Nueva Sector
                 </a>
             </div>
         </div>
@@ -34,32 +35,26 @@
         </div>
         @endif
 
+
         {{-- Tabla con estructura para DataTables --}}
         <div class="border rounded bg-white p-3">
 
-            <table id="tabla-socios" class="table table-hover align-middle">
+            <table id="tabla-sectores" class="table table-hover">
                 <thead class="table-light ">
                     <tr>
-                        <th scope="col">N° Socio</th>
-                        <th scope="col">Nombre y Apellido</th>
-                        <th scope="col">DNI</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nombre</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($socios as $socio)
-                    <tr class="{{ $socio->habilitado == 0 ? 'opacity-50 grayscale' : '' }}">
-                        <td>{{ $socio->numero_socio }}</td>
+                    @foreach($sectores as $sector)
+                    <tr class="{{ $sector->habilitado == 0 ? 'opacity-50 grayscale' : '' }}">
+                        <td>{{ $sector->id }}</td>
+                        <td>{{ $sector->nombre }}</td>
                         <td>
-                            <a href="{{ route('socios.show', $socio->id) }}"
-                                class="text-decoration-none text-dark fw-semibold">
-                                {{ $socio->nombre }} {{ $socio->apellido }}
-                            </a>
-                        </td>
-                        <td>{{ $socio->dni }}</td>
-                        <td>
-                            @if($socio->habilitado == 1)
+                            @if($sector->habilitado == 1)
                             <span class="bg-success-subtle text-success border border-success-subtle px-2 rounded">
                                 Activo </span>
                             @else
@@ -68,21 +63,14 @@
                             @endif
                         </td>
                         <td>
-                            <div class="d-flex gap-2 align-items-center">
-                                <a href="{{ route('socios.cartola', $socio->id) }}" target="_blank"
-                                    class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover me-2">
-                                    Generar Cartola </a>
-                                <a href="{{ route('socios.show', $socio->id) }}" class="btn btn-outline-info"
-                                    title="Ver Detalles">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('socios.edit', $socio->id) }}" class="btn btn-outline-success"
-                                    title="Editar Socio">
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('sectores.edit', $sector->id) }}" class="btn btn-outline-success">
                                     <i class="bi bi-pen"></i>
                                 </a>
 
-                                <form action="{{ route('socios.destroy', $socio->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar este socio?');"
+                                @if($sector->habilitado == 1)
+                                <form action="{{ route('sectores.destroy', $sector->id) }}" method="POST"
+                                    onsubmit="return confirm('¿Estás seguro de eliminar esta utilería?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -90,6 +78,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -104,7 +93,7 @@
     {{-- Script para activar DataTables --}}
     <script type="module">
         $(document).ready(function () {
-            $('#tabla-socios').DataTable({
+            $('#tabla-sectores').DataTable({
                 language: {
                     "decimal": "",
                     "emptyTable": "No hay datos disponibles en la tabla",

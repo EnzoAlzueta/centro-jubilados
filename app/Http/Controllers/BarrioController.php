@@ -39,7 +39,7 @@ class BarrioController extends Controller
         ]);
 
         $barrio = Barrio::create($request->all());
-     
+
         if ($request->has('is_ajax')) {
             return response()->json(['id' => $barrio->id, 'nombre' => $barrio->nombre]);
         }
@@ -86,13 +86,11 @@ class BarrioController extends Controller
     /**
      * Elimina el recurso especificado del almacenamiento.
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Barrio $barrio)
     {
-        $barrio = Barrio::findOrFail($id);
-
         if ($barrio->socios()->exists()) {
             return redirect()->route('barrios.index')
-                ->with('error', 'No se puede eliminar el barrio porque tiene socios asociados.');
+                ->with('error', 'No se puede eliminar el barrio porque tiene socios asociados (incluyendo deshabilitados).');
         }
 
         $barrio->delete();

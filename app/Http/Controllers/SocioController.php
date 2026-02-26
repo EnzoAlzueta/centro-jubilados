@@ -13,10 +13,19 @@ class SocioController extends Controller
     /**
      * Muestra una lista del recurso.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $socios = Socio::with('barrio')->get();
-        return view('socios.index', compact('socios'));
+        $showDisabled = $request->get('ver_deshabilitados', false);
+
+        $query = Socio::with('barrio');
+
+        if (!$showDisabled) {
+            $query->where('habilitado', 1);
+        }
+
+        $socios = $query->get();
+
+        return view('socios.index', compact('socios', 'showDisabled'));
     }
 
     /**
@@ -42,7 +51,7 @@ class SocioController extends Controller
             'barrio_id' => 'required|exists:barrios,id',
             'calle_id' => 'required|exists:calles,id', // Ensured this is calle_id
             'altura' => 'required|string|max:20',
-            'fecha_nacimiento' => 'required|date',
+            'fecha_nacimiento' => 'required|date|after_or_equal:1900-01-01',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
         ]);
@@ -60,7 +69,8 @@ class SocioController extends Controller
      */
     public function show(string $id)
     {
-    //
+        $socio = Socio::with(['barrio', 'calle'])->findOrFail($id);
+        return view('socios.show', compact('socio'));
     }
 
     /**
@@ -89,7 +99,7 @@ class SocioController extends Controller
             'barrio_id' => 'required|exists:barrios,id',
             'calle_id' => 'required|exists:calles,id', // Changed 'calle' to 'calle_id' and added exists rule
             'altura' => 'required|string|max:20',
-            'fecha_nacimiento' => 'required|date',
+            'fecha_nacimiento' => 'required|date|after_or_equal:1900-01-01',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
         ]);

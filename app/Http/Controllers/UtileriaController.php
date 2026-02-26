@@ -12,13 +12,21 @@ class UtileriaController extends Controller
      */
     public function index(Request $request)
     {
+        $showDisabled = $request->get('ver_deshabilitadas', false);
+
+        $query = Utileria::query();
+
+        if (!$showDisabled) {
+            $query->where('habilitado', 1);
+        }
+
+        $utilerias = $query->orderBy('nombre')->get();
+
         if ($request->wantsJson()) {
-            $utilerias = Utileria::all();
             return response()->json($utilerias, 200);
         }
 
-        $utilerias = Utileria::orderBy('nombre')->get();
-        return view('utilerias.index', compact('utilerias'));
+        return view('utilerias.index', compact('utilerias', 'showDisabled'));
     }
 
     /**
@@ -81,7 +89,9 @@ class UtileriaController extends Controller
             'stock_total' => 'required|integer|min:0',
         ]);
 
-        $utileria->update($validated);
+        $utileria->fill($validated);
+        $utileria->habilitado = $request->has('habilitado');
+        $utileria->save();
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -99,12 +109,13 @@ class UtileriaController extends Controller
     public function destroy($id)
     {
         $utileria = Utileria::findOrFail($id);
-        $utileria->delete();
+        $utileria->habilitado = 0;
+        $utileria->save();
 
         if (request()->wantsJson()) {
-            return response()->json(['message' => 'Utilería eliminada correctamente'], 200);
+            return response()->json(['message' => 'Utilería dada de baja correctamente'], 200);
         }
 
-        return redirect()->route('utilerias.index')->with('success', 'Utilería eliminada correctamente.');
+        return redirect()->route('utilerias.index')->with('success', 'Utilería dada de baja correctamente.');
     }
 }

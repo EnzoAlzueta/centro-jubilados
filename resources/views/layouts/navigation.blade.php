@@ -42,6 +42,8 @@
                                     Alquileres</a></li>
                             <li><a class="dropdown-item" href="{{ route('utilerias.index') }}">Gestión de Utilería</a>
                             </li>
+                            <li><a class="dropdown-item" href="{{ route('sectores.index') }}">Gestión de Sectores</a>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item">

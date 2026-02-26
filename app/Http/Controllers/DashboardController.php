@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alquiler;
+use App\Models\Movimiento;
 use App\Models\Socio;
 use Illuminate\Http\Request;
 
@@ -13,10 +14,13 @@ class DashboardController extends Controller
         // Obtener total de socios habilitados
         $totalSocios = Socio::where('habilitado', 1)->count();
 
-        // Obtener ingresos del mes (ejemplo simplificado, sumando precio o seña_pagada)
-        $ingresosMes = Alquiler::whereMonth('fecha_evento', now()->month)
-            ->whereYear('fecha_evento', now()->year)
-            ->sum('seña_pagada');
+        // Obtener ingresos y egresos del mes desde Caja (Movimientos)
+        $query = Movimiento::whereMonth('fecha', now()->month)
+            ->whereYear('fecha', now()->year);
+
+        $totalIngresos = (clone $query)->where('tipo', 'ingreso')->sum('monto');
+        $totalEgresos = (clone $query)->where('tipo', 'egreso')->sum('monto');
+        $saldoMes = $totalIngresos - $totalEgresos;
 
         // Obtener próximos 10 alquileres
         $alquileres = Alquiler::with(['socio', 'sector'])
@@ -25,6 +29,6 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('dashboard', compact('totalSocios', 'ingresosMes', 'alquileres'));
+        return view('dashboard', compact('totalSocios', 'saldoMes', 'alquileres'));
     }
 }

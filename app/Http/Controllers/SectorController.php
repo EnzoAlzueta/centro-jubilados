@@ -8,36 +8,58 @@ use Illuminate\Http\Request;
 class SectorController extends Controller
 {
     /**
-     * GET /api/sectors
-     * Devuelve la lista completa de sectores.
-     * Ideal para llenar el <select> en el formulario de alta de socio.
+     * Muestra una lista de sectores.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $sectors = Sector::all();
-        return response()->json($sectors, 200);
+        $showDisabled = $request->get('ver_deshabilitadas', false);
+
+        $query = Sector::query();
+
+        if (!$showDisabled) {
+            $query->where('habilitado', 1);
+        }
+
+        $sectores = $query->orderBy('nombre')->get();
+
+        if ($request->wantsJson()) {
+            return response()->json($sectores, 200);
+        }
+
+        return view('sectores.index', compact('sectores', 'showDisabled'));
     }
 
     /**
-     * POST /api/sectors
-     * Crea un sector nuevo.
+     * Muestra el formulario para crear un nuevo recurso.
+     */
+    public function create()
+    {
+        return view('sectores.create');
+    }
+
+    /**
+     * POST /api/sectors o almacena desde vista
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => 'required|string|unique:sectors,nombre|max:255',
         ]);
 
-        $sector = Sector::create($request->all());
+        $sector = Sector::create($validated);
 
-        return response()->json([
-            'message' => 'Sector creado correctamente',
-            'data' => $sector
-        ], 201);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Sector creado correctamente',
+                'data' => $sector
+            ], 201);
+        }
+
+        return redirect()->route('sectores.index')->with('success', 'Sector creado correctamente.');
     }
 
     /**
-     * GET /api/sectors/{id}
+     * Muestra el recurso especificado.
      */
     public function show($id)
     {
@@ -46,36 +68,52 @@ class SectorController extends Controller
     }
 
     /**
-     * PUT /api/sectors/{id}
+     * Muestra el formulario para editar el recurso especificado.
+     */
+    public function edit($id)
+    {
+        $sector = Sector::findOrFail($id);
+        return view('sectores.edit', compact('sector'));
+    }
+
+    /**
+     * Actualiza el recurso especificado en el almacenamiento.
      */
     public function update(Request $request, $id)
     {
         $sector = Sector::findOrFail($id);
 
-        $request->validate([
-            'nombre' => 'required|string|unique:sectors,nombre,'.$sector->id.'|max:255',
+        $validated = $request->validate([
+            'nombre' => 'required|string|unique:sectors,nombre,' . $sector->id . '|max:255',
         ]);
 
-        $sector->update($request->all());
+        $sector->fill($validated);
+        $sector->habilitado = $request->has('habilitado');
+        $sector->save();
 
-        return response()->json([
-            'message' => 'Sector actualizado',
-            'data' => $sector
-        ], 200);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Sector actualizado',
+                'data' => $sector
+            ], 200);
+        }
+
+        return redirect()->route('sectores.index')->with('success', 'Sector actualizado correctamente.');
     }
 
     /**
-     * DELETE /api/sectors/{id}
+     * Elimina el recurso especificado del almacenamiento (lógico).
      */
     public function destroy($id)
     {
         $sector = Sector::findOrFail($id);
-        
-        // Opcional: validar si hay socios viviendo aquí antes de borrar
-        // if($sector->socios()->exists()) { return error... }
+        $sector->habilitado = 0;
+        $sector->save();
 
-        $sector->delete();
+        if (request()->wantsJson()) {
+            return response()->json(['message' => 'Sector dado de baja correctamente'], 200);
+        }
 
-        return response()->json(['message' => 'Sector eliminado'], 200);
+        return redirect()->route('sectores.index')->with('success', 'Sector dado de baja correctamente.');
     }
 }

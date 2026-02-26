@@ -58,7 +58,7 @@
                                     Evento</label>
                                 <input type="date" name="fecha_evento"
                                     class="form-control @error('fecha_evento') is-invalid @enderror" id="fecha_evento"
-                                    required min="{{ date('Y-m-d') }}" value="{{ old('fecha_evento') }}">
+                                    required min="1900-01-01" value="{{ old('fecha_evento') }}">
                                 @error('fecha_evento') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
@@ -358,12 +358,23 @@
 
                             const pendiente = alquiler.precio - alquiler.seña_pagada;
                             const paymentSection = document.getElementById('payment-section');
-                            if (pendiente > 0) {
-                                paymentSection.classList.remove('d-none');
-                                document.getElementById('pago_monto').value = pendiente;
-                                document.getElementById('pago_monto').max = pendiente;
-                            } else {
+                            const btnEditar = document.getElementById('btn-editar-alquiler');
+                            const btnEliminar = document.getElementById('btn-eliminar-alquiler');
+
+                            if (estado === 'cancelado') {
                                 paymentSection.classList.add('d-none');
+                                btnEditar.classList.add('d-none');
+                                btnEliminar.classList.add('d-none');
+                            } else {
+                                btnEditar.classList.remove('d-none');
+                                btnEliminar.classList.remove('d-none');
+                                if (pendiente > 0) {
+                                    paymentSection.classList.remove('d-none');
+                                    document.getElementById('pago_monto').value = pendiente;
+                                    document.getElementById('pago_monto').max = pendiente;
+                                } else {
+                                    paymentSection.classList.add('d-none');
+                                }
                             }
 
                             const modalEl = document.getElementById('eventModal');
@@ -479,16 +490,23 @@
             document.getElementById('btn-eliminar-alquiler').addEventListener('click', function () {
                 const id = this.getAttribute('data-id');
                 if (confirm('¿Está seguro de que desea cancelar esta reserva?')) {
+                    const devolucion = confirm('¿Desea registrar la devolución de la seña/pago en la caja?');
                     fetch('/alquileres/' + id, {
                         method: 'DELETE',
                         headers: {
+                            'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                             'X-Requested-With': 'XMLHttpRequest'
-                        }
+                        },
+                        body: JSON.stringify({ devolucion: devolucion ? 1 : 0 })
                     })
                         .then(response => {
-                            if (response.ok) location.reload();
-                            else alert('Error al cancelar la reserva.');
+                            if (response.ok) {
+                                alert('Reserva cancelada correctamente.');
+                                location.reload();
+                            } else {
+                                alert('Error al cancelar la reserva.');
+                            }
                         });
                 }
             });
