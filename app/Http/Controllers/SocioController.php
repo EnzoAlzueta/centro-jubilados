@@ -35,7 +35,7 @@ class SocioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'numero_socio' => 'required|integer|unique:socios,numero_socio',
+            'numero_socio' => 'required|string|unique:socios,numero_socio',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'dni' => 'required|string|unique:socios,dni|max:20',
@@ -82,7 +82,7 @@ class SocioController extends Controller
         $socio = Socio::findOrFail($id);
 
         $request->validate([
-            'numero_socio' => 'required|integer|unique:socios,numero_socio,' . $socio->id,
+            'numero_socio' => 'required|string|unique:socios,numero_socio,' . $socio->id,
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'dni' => 'required|string|unique:socios,dni,' . $socio->id . '|max:20',
