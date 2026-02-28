@@ -10,6 +10,7 @@ use App\Http\Controllers\AlquilerController;
 use App\Http\Controllers\UtileriaController;
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/', function () {
     return view('auth.login');
 });
@@ -47,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/caja', [CajaController::class , 'index'])->name('caja.index');
     Route::post('/caja', [CajaController::class , 'store'])->name('caja.store');
     Route::post('/caja/pago-cuota', [CajaController::class , 'pagarCuota'])->name('caja.pagarCuota');
+    Route::post('/caja/{id}/cancelar', [CajaController::class, 'cancelarPagoCuota'])->name('cuotas.cancelar');
 
     // Reportes
     Route::get('/reportes', [ReporteController::class , 'index'])->name('reportes.index');

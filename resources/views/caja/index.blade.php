@@ -86,9 +86,24 @@
                     </thead>
                     <tbody>
                         @foreach($movimientos as $movimiento)
-                        <tr>
+                        
+                        <tr @if($movimiento->categoria == 'cuota' && $movimiento->referencia?->pagado) 
+                                class="fila-cuota" 
+                                style="cursor: pointer;" 
+                                data-id="{{ $movimiento->referencia_id }}"
+                                data-concepto="{{ $movimiento->concepto }}"
+                            @else
+                                class="bg-light text-muted" {{-- Opcional: opacar la fila si ya está anulada --}}
+                            @endif>
+                        
+
                             <td>{{ \Carbon\Carbon::parse($movimiento->fecha)->format('d/m/Y') }}</td>
-                            <td>{{ $movimiento->concepto }}</td>
+                            <td>
+                                {{ $movimiento->concepto }}
+                                @if($movimiento->categoria == 'cuota' && !$movimiento->referencia?->pagado && $movimiento->tipo == 'ingreso')
+                                    <span class="badge bg-secondary ms-2">Anulada</span>
+                                @endif
+                            </td>
                             <td>
                                 <span
                                     class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">
@@ -246,5 +261,37 @@
                 }
             });
         });
+
+        $(document).ready(function() {
+            // Usamos delegación de eventos en el cuerpo de la tabla
+            $('#tabla-movimientos').on('click', '.fila-cuota', function() {
+                // Extraemos los datos del TR
+                const id = $(this).data('id');
+                const concepto = $(this).data('concepto');
+
+                // Confirmación nativa del navegador
+                if (confirm('¿Estás seguro de anular el pago: "' + concepto + '"? Se registrará un egreso en caja.')) {
+                    
+                    // Creamos un formulario dinámico para enviar el POST
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/caja/' + id + '/cancelar';
+
+                    // Token CSRF obligatorio para Laravel
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    const inputToken = document.createElement('input');
+                    inputToken.type = 'hidden';
+                    inputToken.name = '_token';
+                    inputToken.value = token;
+
+                    form.appendChild(inputToken);
+                    document.body.appendChild(form);
+                    
+                    // Enviamos el formulario
+                    form.submit();
+                }
+            });
+        });
+       
     </script>
 </x-app-layout>

@@ -7,6 +7,7 @@ use App\Models\Cuota;
 use App\Models\Socio;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class CajaController extends Controller
 {
@@ -104,5 +105,38 @@ class CajaController extends Controller
 
         return redirect()->route('caja.index', ['mes' => $request->mes, 'anio' => $request->anio])
             ->with('success', 'Cuota pagada y registrada en caja.');
+    }
+
+    public function cancelarPagoCuota(Request $request, $id)
+    {
+        // El $id es el ID de la Cuota
+        $cuota = Cuota::with('socio')->findOrFail($id);
+
+        try {
+            DB::transaction(function () use ($cuota, $request) {
+                // 1. Revertimos el estado de la cuota
+                $cuota->update([
+                    'pagado' => false,
+                    'fecha_pago' => null
+                ]);
+
+                // 2. Registramos el movimiento de egreso (Devolución)
+                // Usamos los datos de la cuota para el concepto
+                Movimiento::create([
+                    'fecha' => now()->toDateString(),
+                    'tipo' => 'egreso',
+                    'concepto' => "Anulación/Devolución Cuota: {$cuota->socio->apellido}, {$cuota->socio->nombre} ({$cuota->mes}/{$cuota->anio})",
+                    'monto' => $cuota->monto,
+                    'categoria' => 'cuota',
+                    'referencia_id' => $cuota->id,
+                    'referencia_type' => Cuota::class
+                ]);
+            });
+
+            return back()->with('success', 'Pago de cuota cancelado y registrado como egreso en caja.');
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al cancelar el pago: ' . $e->getMessage());
+        }
     }
 }
