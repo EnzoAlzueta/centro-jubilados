@@ -44,6 +44,8 @@ class SectorController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|unique:sectors,nombre|max:255',
+            'descripcion' => 'nullable|string|max:1000',
+            'precio_base' => 'nullable|numeric|min:0',
         ]);
 
         $sector = Sector::create($validated);
@@ -85,6 +87,8 @@ class SectorController extends Controller
 
         $validated = $request->validate([
             'nombre' => 'required|string|unique:sectors,nombre,' . $sector->id . '|max:255',
+            'descripcion' => 'nullable|string|max:1000',
+            'precio_base' => 'nullable|numeric|min:0',
         ]);
 
         $sector->fill($validated);

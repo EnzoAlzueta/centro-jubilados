@@ -52,8 +52,9 @@
                                 <select name="sector_id" id="sector_id"
                                     class="form-select @error('sector_id') is-invalid @enderror" required>
                                     @foreach($sectores as $sector)
-                                    <option value="{{ $sector->id }}" {{ old('sector_id')==$sector->id ? 'selected' : ''
-                                        }}>{{ $sector->nombre }}</option>
+                                    <option value="{{ $sector->id }}" data-precio="{{ $sector->precio_base ?? '' }}" {{
+                                        old('sector_id')==$sector->id ? 'selected' : '' }}
+                                        >{{ $sector->nombre }}</option>
                                     @endforeach
                                 </select>
                                 @error('sector_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -282,6 +283,28 @@
                     direction: "asc"
                 }
             });
+
+            // Auto-completar Precio Total desde el Precio Base del Sector seleccionado
+            const sectorSelect = document.getElementById('sector_id');
+            const precioInput = document.querySelector('input[name="precio"]');
+
+            function aplicarPrecioSector() {
+                // Solo aplicar en nueva reserva (no cuando estamos editando una existente)
+                const isEditing = document.querySelector('#form-alquiler input[name="_method"]') !== null;
+                if (isEditing) return;
+
+                const selectedOption = sectorSelect.options[sectorSelect.selectedIndex];
+                const precioBase = selectedOption ? selectedOption.getAttribute('data-precio') : '';
+                if (precioBase !== '' && precioBase !== null) {
+                    precioInput.value = precioBase;
+                }
+            }
+
+            sectorSelect.addEventListener('change', aplicarPrecioSector);
+            // Aplicar al cargar la página si hay un old value seleccionado y no hay precio previo
+            if (!precioInput.value) {
+                aplicarPrecioSector();
+            }
             // Inicializar Calendario
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {

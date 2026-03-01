@@ -24,6 +24,27 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción <span
+                                class="text-muted small">(opcional)</span></label>
+                        <textarea name="descripcion" id="descripcion" class="form-control"
+                            rows="2">{{ old('descripcion', $sector->descripcion) }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="precio_base" class="form-label">Precio Base <span class="text-muted small">(se
+                                cargará automáticamente en nuevas reservas)</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" name="precio_base" id="precio_base"
+                                class="form-control @error('precio_base') is-invalid @enderror" placeholder="0.00"
+                                min="0" value="{{ old('precio_base', $sector->precio_base) }}">
+                            @error('precio_base')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="mb-4 form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="habilitado" name="habilitado"
                             value="1" {{ old('habilitado', $sector->habilitado) ? 'checked' : '' }}>
