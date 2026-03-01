@@ -8,4 +8,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            // Esto ayuda a que las librerías viejas encuentren jQuery
+            '$': 'jquery',
+            'jQuery': 'jquery',
+        },
+    },
 });

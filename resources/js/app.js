@@ -25,3 +25,12 @@ window.DataTable = DataTable;
 import TomSelect from 'tom-select';
 window.TomSelect = TomSelect;
 
+import { Calendar } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import esLocale from '@fullcalendar/core/locales/es';
+window.Calendar = Calendar;
+window.dayGridPlugin = dayGridPlugin;
+window.esLocale = esLocale;
+window.interactionPlugin = interactionPlugin;

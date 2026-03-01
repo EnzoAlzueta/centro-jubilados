@@ -19,9 +19,14 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@fullcalendar/core": "^6.1.20",
+        "@fullcalendar/daygrid": "^6.1.20",
+        "@fullcalendar/interaction": "^6.1.20",
+        "@fullcalendar/timegrid": "^6.1.20",
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.8",
-        "datatables.net-bs5": "^2.3.6",
+        "bootstrap-icons": "^1.13.1",
+        "datatables.net-bs5": "^2.3.7",
         "jquery": "^3.7.1",
         "sass": "^1.97.2",
         "tom-select": "^2.4.3"

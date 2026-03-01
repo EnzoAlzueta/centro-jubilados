@@ -307,9 +307,10 @@
             }
             // Inicializar Calendario
             const calendarEl = document.getElementById('calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
+            const calendar = new window.Calendar(calendarEl, {
+                plugins: [window.dayGridPlugin, window.interactionPlugin],
                 initialView: 'dayGridMonth',
-                locale: 'es',
+                locale: window.esLocale,
                 height: 700,
                 headerToolbar: {
                     left: 'prev,next today',
