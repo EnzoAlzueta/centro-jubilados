@@ -7,9 +7,16 @@
                 <i class="bi bi-arrow-left"></i> Volver
             </a>
         </div>
-        
+
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
+                @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show mb-4 py-2 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Error al actualizar. Revisa los campos.
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @endif
+
                 <form action="{{ route('barrios.update', $barrio->id) }}" method="POST" id="form-editar-barrio">
                     @csrf
                     @method('PUT')
@@ -17,8 +24,14 @@
                     {{-- Campo Nombre (Input normal de Bootstrap) --}}
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre del Barrio</label>
-                        <input type="text" name="nombre" id="nombre" class="form-control"
+                        <input type="text" name="nombre" id="nombre"
+                            class="form-control @error('nombre') is-invalid @enderror"
                             value="{{ old('nombre', $barrio->nombre) }}" required>
+                        @error('nombre')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                        @enderror
                     </div>
 
                     {{-- Botones de acción --}}

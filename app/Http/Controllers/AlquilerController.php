@@ -75,6 +75,34 @@ class AlquilerController extends Controller
             'utilerias.*.cantidad' => 'nullable|integer|min:0'
         ]);
 
+        // Validar disponibilidad: Solo 1 sector por día (excluyendo cancelados)
+        $existeReserva = Alquiler::whereDate('fecha_evento', '=', $validated['fecha_evento'])
+            ->where('estado', '!=', 'cancelado')
+            ->exists();
+
+        if ($existeReserva) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Ya existe una reserva para la fecha seleccionada.'], 422);
+            }
+            return back()->with('error', 'Ya existe una reserva para la fecha seleccionada. Por favor, elige otro día.')->withInput();
+        }
+
+        // Validar stock de utilerías
+        if (!empty($request->utilerias)) {
+            foreach ($request->utilerias as $item) {
+                if (isset($item['cantidad']) && $item['cantidad'] > 0) {
+                    $util = Utileria::find($item['id']);
+                    if ($util && $item['cantidad'] > $util->stock_total) {
+                        $errorMsg = "Stock insuficiente de {$util->nombre}. Disponible: {$util->stock_total}";
+                        if ($request->wantsJson()) {
+                            return response()->json(['error' => $errorMsg], 422);
+                        }
+                        return back()->with('error', $errorMsg)->withInput();
+                    }
+                }
+            }
+        }
+
         try {
             return DB::transaction(function () use ($validated, $request) {
                 $alquiler = Alquiler::create([
@@ -132,12 +160,51 @@ class AlquilerController extends Controller
     public function update(Request $request, $id)
     {
         $alquiler = Alquiler::findOrFail($id);
-        $alquiler->update($request->except(['utilerias', 'tipo_cliente']));
+        
+        $request->validate([
+            'sector_id' => 'required|exists:sectors,id',
+            'fecha_evento' => 'required|date|after_or_equal:1900-01-01',
+            'tipo_evento' => 'required|string',
+            'precio' => 'required|numeric|min:0',
+        ]);
+
+        // Validar disponibilidad: Solo 1 sector por día (excluyendo cancelados y el actual)
+        $existeReserva = Alquiler::whereDate('fecha_evento', '=', $request->fecha_evento)
+            ->where('estado', '!=', 'cancelado')
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($existeReserva) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Ya existe una reserva para la fecha seleccionada.'], 422);
+            }
+            return back()->with('error', 'Ya existe una reserva para la fecha seleccionada. Por favor, elige otro día.')->withInput();
+        }
+
+        // Validar stock de utilerías
+        if ($request->has('utilerias')) {
+            foreach ($request->utilerias as $item) {
+                if (isset($item['cantidad']) && $item['cantidad'] > 0) {
+                    $util = Utileria::find($item['id'] ?? null);
+                    if ($util && $item['cantidad'] > $util->stock_total) {
+                        $errorMsg = "Stock insuficiente de {$util->nombre}. Disponible: {$util->stock_total}";
+                        if ($request->wantsJson()) {
+                            return response()->json(['error' => $errorMsg], 422);
+                        }
+                        return back()->with('error', $errorMsg)->withInput();
+                    }
+                }
+            }
+        }
+
+        $alquiler->update($request->except(['utilerias', '_method', '_token']));
 
         if ($request->has('utilerias')) {
             $syncData = [];
             foreach ($request->utilerias as $item) {
-                $syncData[$item['id']] = ['cantidad' => $item['cantidad']];
+                if (isset($item['id'])) {
+                    $syncData[$item['id']] = ['cantidad' => $item['cantidad'] ?? 0];
+                }
             }
             $alquiler->utilerias()->sync($syncData);
         }

@@ -2,19 +2,34 @@
     <div class="container-fluid px-4 px-md-5 mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold m-0">Movimientos de Caja</h2>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMovimiento">
-                    <i class="bi bi-plus-circle me-1"></i> Nuevo Movimiento
-                </button>
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCuota">
-                    <i class="bi bi-cash-coin me-1"></i> Cobrar Cuota
-                </button>
-            </div>
+            <button type="button" class="btn btn-primary px-4 shadow-sm fw-bold" data-bs-toggle="modal"
+                data-bs-target="#modalMovimiento">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Movimiento
+            </button>
         </div>
 
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+            <ul class="mb-0 d-inline-block">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         @endif
@@ -86,22 +101,13 @@
                     </thead>
                     <tbody>
                         @foreach($movimientos as $movimiento)
-                        
-                        <tr @if($movimiento->categoria == 'cuota' && $movimiento->referencia?->pagado) 
-                                class="fila-cuota" 
-                                style="cursor: pointer;" 
-                                data-id="{{ $movimiento->referencia_id }}"
-                                data-concepto="{{ $movimiento->concepto }}"
-                            @else
-                                class="bg-light text-muted" {{-- Opcional: opacar la fila si ya está anulada --}}
-                            @endif>
-                        
-
+                        <tr>
                             <td>{{ \Carbon\Carbon::parse($movimiento->fecha)->format('d/m/Y') }}</td>
                             <td>
                                 {{ $movimiento->concepto }}
-                                @if($movimiento->categoria == 'cuota' && !$movimiento->referencia?->pagado && $movimiento->tipo == 'ingreso')
-                                    <span class="badge bg-secondary ms-2">Anulada</span>
+                                @if($movimiento->categoria == 'cuota' && !$movimiento->referencia?->pagado &&
+                                $movimiento->tipo == 'ingreso')
+                                <span class="badge bg-secondary ms-2">Anulada</span>
                                 @endif
                             </td>
                             <td>
@@ -184,74 +190,7 @@
         </div>
     </div>
 
-    {{-- Modal Cobrar Cuota --}}
-    <div class="modal fade" id="modalCuota" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form action="{{ route('caja.pagarCuota') }}" method="POST" class="modal-content border-0 shadow">
-                @csrf
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Cobrar Cuota Social</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Socio</label>
-                        <select name="socio_id" id="socio_id" class="form-select" required>
-                            <option value="">Seleccione un socio...</option>
-                            @foreach($socios as $socio)
-                            <option value="{{ $socio->id }}">{{ $socio->apellido }}, {{ $socio->nombre }} (Num: {{
-                                $socio->numero_socio }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Mes</label>
-                            <select name="mes" class="form-select" required>
-                                @foreach(['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto',
-                                'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] as $index => $nombreMes)
-                                <option value="{{ $index + 1 }}" {{ now()->month == ($index + 1) ? 'selected' : '' }}>{{
-                                    $nombreMes }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Año</label>
-                            <select name="anio" class="form-select" required>
-                                @for($i = now()->year; $i >= now()->year - 2; $i--)
-                                <option value="{{ $i }}" {{ now()->year == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Monto de la Cuota</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" step="0.01" name="monto" class="form-control" value="1000.00" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Fecha de Pago</label>
-                        <input type="date" name="fecha_pago" class="form-control" value="{{ date('Y-m-d') }}" required>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">Registrar Pago</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script type="module">
-        // TomSelect de socios
-            new TomSelect("#socio_id", {
-                sortField: {
-                    field: "text",
-                    direction: "asc"
-                }
-            });
         $(document).ready(function () {
             $('#tabla-movimientos').DataTable({
                 responsive: true,
@@ -261,37 +200,5 @@
                 }
             });
         });
-
-        $(document).ready(function() {
-            // Usamos delegación de eventos en el cuerpo de la tabla
-            $('#tabla-movimientos').on('click', '.fila-cuota', function() {
-                // Extraemos los datos del TR
-                const id = $(this).data('id');
-                const concepto = $(this).data('concepto');
-
-                // Confirmación nativa del navegador
-                if (confirm('¿Estás seguro de anular el pago: "' + concepto + '"? Se registrará un egreso en caja.')) {
-                    
-                    // Creamos un formulario dinámico para enviar el POST
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '/caja/' + id + '/cancelar';
-
-                    // Token CSRF obligatorio para Laravel
-                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    const inputToken = document.createElement('input');
-                    inputToken.type = 'hidden';
-                    inputToken.name = '_token';
-                    inputToken.value = token;
-
-                    form.appendChild(inputToken);
-                    document.body.appendChild(form);
-                    
-                    // Enviamos el formulario
-                    form.submit();
-                }
-            });
-        });
-       
     </script>
 </x-app-layout>

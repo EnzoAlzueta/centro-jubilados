@@ -9,6 +9,12 @@
                     <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 @endif
+                @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show mb-0 py-2 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @endif
                 @if($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show mb-0 py-2 shadow-sm" role="alert">
                     <i class="bi bi-exclamation-triangle me-2"></i> Error en la reserva. Revisa los campos.
@@ -38,7 +44,7 @@
                         <h4 class="fw-bold mb-0">Nueva Reserva</h4>
                     </div>
                     <div class="card-body p-4">
-                        <form action="{{ route('alquileres.store') }}" method="POST" id="form-alquiler">
+                        <form action="{{ route('alquileres.store') }}" method="POST" id="form-alquiler" novalidate>
                             @csrf
 
                             <div class="mb-3">
@@ -651,7 +657,7 @@
                                 <div class="input-group input-group-sm">
                                     <input type="number" name="utilerias[{{ $loop->index }}][cantidad]"
                                         form="form-alquiler" class="form-control shadow-none utileria-input"
-                                        placeholder="0" min="0"
+                                        placeholder="0" min="0" max="{{ $util->stock_total }}"
                                         value="{{ old('utilerias.'.$loop->index.'.cantidad', 0) }}"
                                         data-id="{{ $util->id }}">
                                     <span class="input-group-text">unid.</span>

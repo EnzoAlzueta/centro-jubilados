@@ -76,6 +76,37 @@
                     </div>
                 </div>
             </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom-0 pt-4">
+                            <h5 class="card-title fw-bold mb-0">
+                                <i class="bi bi-card-list me-2 text-primary"></i>Cartola de Pagos
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="text-muted small mb-4">Genera el comprobante anual de pagos del socio para el año
+                                seleccionado.</p>
+                            <form action="{{ route('socios.cartola', $socio->id) }}" method="GET" target="_blank"
+                                class="row g-3">
+                                <div class="col-7">
+                                    <select name="anio" class="form-select shadow-none">
+                                        @for($i = now()->year + 1; $i >= now()->year - 3; $i--)
+                                        <option value="{{ $i }}" {{ $i==now()->year ? 'selected' : '' }}>Año {{ $i }}
+                                        </option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-5">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-file-pdf"></i> Generar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

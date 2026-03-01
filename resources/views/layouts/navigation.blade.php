@@ -19,8 +19,15 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{{ route('dashboard') }}">Inicio</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('socios.index') }}" class="nav-link">Socios</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Socios
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('socios.index') }}">Gestión de Socios</a></li>
+                            <li><a class="dropdown-item" href="{{ route('cuotas.index') }}">Gestión de Cuotas</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"

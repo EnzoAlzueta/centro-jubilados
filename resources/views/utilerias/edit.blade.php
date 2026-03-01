@@ -10,6 +10,12 @@
 
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
+                @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show mb-4 py-2 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Error al actualizar. Revisa los campos.
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @endif
                 <form action="{{ route('utilerias.update', $utileria->id) }}" method="POST">
                     @csrf
                     @method('PUT')

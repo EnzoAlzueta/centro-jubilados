@@ -31,6 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('socios', SocioController::class)->names('socios');
     Route::get('/socios/{socio}/cartola', [SocioController::class , 'cartola'])->name('socios.cartola');
 
+    // Cuotas
+    Route::resource('cuotas', App\Http\Controllers\CuotaController::class)->names('cuotas');
+    Route::post('/cuotas/{id}/restore', [App\Http\Controllers\CuotaController::class , 'restore'])->name('cuotas.restore');
+
     // Alquileres
     Route::get('/alquileres', [AlquilerController::class , 'index'])->name('alquileres.index');
     Route::get('/alquileres/eventos', [AlquilerController::class , 'getEvents'])->name('alquileres.eventos');
@@ -47,8 +51,6 @@ Route::middleware('auth')->group(function () {
     // Caja
     Route::get('/caja', [CajaController::class , 'index'])->name('caja.index');
     Route::post('/caja', [CajaController::class , 'store'])->name('caja.store');
-    Route::post('/caja/pago-cuota', [CajaController::class , 'pagarCuota'])->name('caja.pagarCuota');
-    Route::post('/caja/{id}/cancelar', [CajaController::class, 'cancelarPagoCuota'])->name('cuotas.cancelar');
 
     // Reportes
     Route::get('/reportes', [ReporteController::class , 'index'])->name('reportes.index');

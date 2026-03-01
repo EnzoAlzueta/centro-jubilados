@@ -126,13 +126,20 @@ class SocioController extends Controller
     /**
      * Genera la cartola de pagos en formato PDF.
      */
-    public function cartola(string $id)
+    public function cartola(Request $request, string $id)
     {
-        $socio = Socio::with(['barrio', 'calle'])->findOrFail($id);
+        $anio = $request->get('anio', date('Y'));
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('socios.pdf.cartola', compact('socio'))
+        $socio = Socio::with(['barrio', 'calle', 'cuotas' => function ($query) use ($anio) {
+            $query->where('anio', '=', $anio)
+                ->where('pagado', '=', true);
+        }])->findOrFail($id);
+
+        $cuotasPagas = $socio->cuotas->keyBy('mes');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('socios.pdf.cartola', compact('socio', 'cuotasPagas', 'anio'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('Cartola_Socio_' . $socio->numero_socio . '.pdf');
+        return $pdf->stream('Cartola_Socio_' . $socio->numero_socio . '_' . $anio . '.pdf');
     }
 }
