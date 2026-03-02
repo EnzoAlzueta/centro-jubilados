@@ -71,4 +71,55 @@ O de forma manual:
 5.  `php artisan route:clear` - Para limpiar la cache de rutas.
 6.  `php artisan view:clear` - Para limpiar la cache de vistas.
 
+## 📦 Distribución como Aplicación de Escritorio (Windows)
+
+El sistema puede empaquetarse como una aplicación nativa de Windows (.exe) utilizando NativePHP. Esto permite que el cliente lo use sin instalar Docker, PHP o servidores externos.
+
+### Requisitos previos para compilar (en Linux)
+
+Para generar el instalador de Windows desde un entorno Linux (como Ubuntu), es necesario contar con:
+
+#### Wine (con soporte de 32 bits):
+
+```bash
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install wine wine32
+wineboot -u
+```
+
+#### Pasos para generar el instalador .exe
+
+Para asegurar una compilación limpia y funcional, seguí este orden estrictamente:
+
+##### Preparar la Base de Datos:
+Asegurate de que el archivo .env apunte a SQLite:
+
+`DB_CONNECTION=sqlite`
+
+##### Compilar Assets de Producción:
+Generá los archivos estáticos de Vite (Bootstrap, FullCalendar, etc.):
+
+`npm run build`
+
+##### Limpiar Dependencias de Desarrollo:
+Para evitar errores de clases no encontradas (como PHPUnit) en el empaquetado final:
+
+```bash
+rm -rf vendor/
+composer install --no-dev --optimize-autoloader
+```
+
+##### Generar el Build:
+Ejecutá el comando de NativePHP para Windows:
+
+`php artisan native:build win`
+
+Seleccioná la arquitectura x64 o all cuando se te solicite.
+
+##### Resultado:
+El instalador se generará en la carpeta dist/ con el nombre Laravel-X.X.X-setup.exe.
+
+Nota: Una vez finalizado el build, recordá ejecutar `composer install` nuevamente (sin el flag --no-dev) para recuperar tus herramientas de desarrollo y testing locales.
+
 ---

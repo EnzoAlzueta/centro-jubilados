@@ -22,3 +22,13 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# NativePHP & Desktop Build
+/dist/
+/vendor/nativephp/electron/resources/js/node_modules/
+/vendor/nativephp/electron/resources/js/dist/
+/vendor/nativephp/electron/resources/js/out/
+/resources/app/vendor/
+
+# SQLite (si no querés subir tu base de datos con datos reales)
+/database/database.sqlite
