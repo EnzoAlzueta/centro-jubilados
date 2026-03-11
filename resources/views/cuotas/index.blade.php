@@ -118,7 +118,7 @@
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{{ route('socios.cartola', $cuota->socio_id) }}?anio={{ $cuota->anio }}"
-                                        class="btn btn-outline-primary btn-sm" title="Ver Cartola">
+                                        class="btn btn-outline-primary btn-sm" title="Ver Cartola" target="_blank">
                                         <i class="bi bi-card-list"></i>
                                     </a>
 

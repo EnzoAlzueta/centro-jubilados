@@ -45,6 +45,19 @@ class CuotaController extends Controller
     }
 
     /**
+     * Get paid months for a socio and year.
+     */
+    public function getMesesPagados(Request $request, $socioId, $anio)
+    {
+        $meses = Cuota::where('socio_id', $socioId)
+            ->where('anio', $anio)
+            ->pluck('mes')
+            ->toArray();
+
+        return response()->json(['pagados' => $meses]);
+    }
+
+    /**
      * Restore the specified resource from storage.
      */
     public function restore(string $id)
@@ -77,7 +90,8 @@ class CuotaController extends Controller
     {
         $request->validate([
             'socio_id' => 'required|exists:socios,id',
-            'mes' => 'required|integer|between:1,12',
+            'meses' => 'required|array|min:1',
+            'meses.*' => 'integer|between:1,12',
             'anio' => 'required|integer',
             'monto' => 'required|numeric|min:0',
             'fecha_pago' => 'required|date|after_or_equal:1900-01-01'
@@ -89,57 +103,69 @@ class CuotaController extends Controller
             return redirect()->back()->withInput()->with('error', 'No se pueden registrar cuotas para un socio deshabilitado.');
         }
 
-        $cuotaExistente = Cuota::withTrashed()
-            ->where('socio_id', '=', $request->socio_id)
-            ->where('mes', '=', $request->mes)
-            ->where('anio', '=', $request->anio)
-            ->first();
+        // Revisar si ya existen cuotas activas para los meses seleccionados
+        $cuotasActivasExistentes = Cuota::where('socio_id', $request->socio_id)
+            ->whereIn('mes', $request->meses)
+            ->where('anio', $request->anio)
+            ->get();
 
-        if ($cuotaExistente && !$cuotaExistente->trashed()) {
-            return redirect()->back()->withInput()->with('error', 'El socio ya tiene registrada una cuota activa para ese período.');
+        if ($cuotasActivasExistentes->count() > 0) {
+            return redirect()->back()->withInput()->with('error', 'El socio ya tiene registrada una cuota activa para alguno de los períodos seleccionados.');
         }
 
         try {
-            DB::transaction(function () use ($request, $cuotaExistente) {
-                if ($cuotaExistente && $cuotaExistente->trashed()) {
-                    // Restaurar y actualizar cuota previamente anulada
-                    $cuotaExistente->restore();
-                    $cuotaExistente->update([
-                        'monto' => $request->monto,
-                        'pagado' => true,
-                        'fecha_pago' => $request->fecha_pago
-                    ]);
-                    $cuota = $cuotaExistente;
-                }
-                else {
-                    // Crear cuota nueva
-                    $cuota = Cuota::create([
-                        'socio_id' => $request->socio_id,
-                        'mes' => $request->mes,
-                        'anio' => $request->anio,
-                        'monto' => $request->monto,
-                        'pagado' => true,
-                        'fecha_pago' => $request->fecha_pago
-                    ]);
-                }
+            DB::transaction(function () use ($request, $socio) {
+                // El monto ingresado es POR MES, pero el movimiento de caja registrará el total o movimientos separados.
+                $montoPorMes = $request->monto;
+                
+                // Obtener posibles cuotas anuladas previamente para los meses solicitados
+                $cuotasAnuladas = Cuota::onlyTrashed()
+                    ->where('socio_id', $request->socio_id)
+                    ->whereIn('mes', $request->meses)
+                    ->where('anio', $request->anio)
+                    ->get()
+                    ->keyBy('mes');
 
-                // Registrar movimiento en caja
-                $socio = Socio::find($request->socio_id);
-                Movimiento::create([
-                    'fecha' => $request->fecha_pago,
-                    'tipo' => 'ingreso',
-                    'concepto' => "Pago de cuota: {$socio->apellido}, {$socio->nombre} ({$request->mes}/{$request->anio})",
-                    'monto' => $request->monto,
-                    'categoria' => 'cuota',
-                    'referencia_id' => $cuota->id,
-                    'referencia_type' => Cuota::class
-                ]);
+                foreach ($request->meses as $mes) {
+                    if ($cuotasAnuladas->has($mes)) {
+                        // Restaurar y actualizar cuota previamente anulada
+                        $cuota = $cuotasAnuladas->get($mes);
+                        $cuota->restore();
+                        $cuota->update([
+                            'monto' => $montoPorMes,
+                            'pagado' => true,
+                            'fecha_pago' => $request->fecha_pago
+                        ]);
+                    }
+                    else {
+                        // Crear cuota nueva
+                        $cuota = Cuota::create([
+                            'socio_id' => $request->socio_id,
+                            'mes' => $mes,
+                            'anio' => $request->anio,
+                            'monto' => $montoPorMes,
+                            'pagado' => true,
+                            'fecha_pago' => $request->fecha_pago
+                        ]);
+                    }
+
+                    // Registrar movimiento en caja correspondiente a este mes
+                    Movimiento::create([
+                        'fecha' => $request->fecha_pago,
+                        'tipo' => 'ingreso',
+                        'concepto' => "Pago de cuota: {$socio->apellido}, {$socio->nombre} (Mes {$mes}/{$request->anio})",
+                        'monto' => $montoPorMes,
+                        'categoria' => 'cuota',
+                        'referencia_id' => $cuota->id,
+                        'referencia_type' => Cuota::class
+                    ]);
+                }
             });
 
-            return redirect()->route('cuotas.index')->with('success', 'Cuota registrada y asimilada en caja.');
+            return redirect()->route('cuotas.index')->with('success', 'Cuotas registradas y asimiladas en caja correctamente.');
         }
         catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Error al registrar la cuota: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Error al registrar las cuotas: ' . $e->getMessage());
         }
     }
 

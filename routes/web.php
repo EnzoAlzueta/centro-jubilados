@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/socios/{socio}/cartola', [SocioController::class , 'cartola'])->name('socios.cartola');
 
     // Cuotas
+    Route::get('/cuotas/pagadas/{socioId}/{anio}', [App\Http\Controllers\CuotaController::class, 'getMesesPagados'])->name('cuotas.pagadas');
     Route::resource('cuotas', App\Http\Controllers\CuotaController::class)->names('cuotas');
     Route::post('/cuotas/{id}/restore', [App\Http\Controllers\CuotaController::class , 'restore'])->name('cuotas.restore');
 
