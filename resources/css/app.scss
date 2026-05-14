@@ -8,6 +8,19 @@
 
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+/* Bootstrap Icons: el ::before hereda font-size del <i>; sin tope, un ancestro con fuente grande deja los glifos enormes */
+i.bi {
+    font-size: 1rem;
+}
+
+.btn-sm i.bi {
+    font-size: 0.875rem;
+}
+
+.btn-lg i.bi {
+    font-size: 1.25rem;
+}
+
 /* Agrega esto para probar si carga */
 body {
     background-color: #f0f0f0; /* Un gris clarito */
