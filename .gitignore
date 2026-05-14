@@ -29,6 +29,6 @@ Thumbs.db
 /vendor/nativephp/electron/resources/js/dist/
 /vendor/nativephp/electron/resources/js/out/
 /resources/app/vendor/
-
+/dist/win-unpacked/
 # SQLite (si no querés subir tu base de datos con datos reales)
 /database/database.sqlite
