@@ -24,7 +24,8 @@ class AlquilerController extends Controller
 
         $socios = Socio::where('habilitado', 1)->orderBy('apellido')->get();
         $sectores = Sector::where('habilitado', 1)->get();
-        $utilerias = Utileria::all();
+        // Solo utilería habilitada: las dadas de baja no deben aparecer en el selector.
+        $utilerias = Utileria::where('habilitado', 1)->orderBy('nombre')->get();
 
         return view('alquileres.index', compact('socios', 'sectores', 'utilerias'));
     }
@@ -197,7 +198,16 @@ class AlquilerController extends Controller
             }
         }
 
-        $alquiler->update($request->except(['utilerias', '_method', '_token']));
+        $alquiler->update([
+            'sector_id' => $request->sector_id,
+            'fecha_evento' => $request->fecha_evento,
+            'tipo_evento' => $request->tipo_evento,
+            'precio' => $request->precio,
+            'seña_pagada' => $request->seña_pagada ?? 0,
+            'socio_id' => $request->socio_id ?: null,
+            'solicitante_externo' => $request->solicitante_externo ?: null,
+            'dni_solicitante_externo' => $request->dni_solicitante_externo ?: null,
+        ]);
 
         if ($request->has('utilerias')) {
             $syncData = [];

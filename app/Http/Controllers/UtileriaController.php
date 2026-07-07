@@ -109,6 +109,24 @@ class UtileriaController extends Controller
     public function destroy($id)
     {
         $utileria = Utileria::findOrFail($id);
+
+        // No permitir la baja si la utilería está comprometida en algún alquiler
+        // futuro que no esté cancelado (evita inconsistencias en reservas ya pactadas).
+        $tieneAlquilerFuturo = $utileria->alquileres()
+            ->whereDate('fecha_evento', '>=', now()->toDateString())
+            ->where('estado', '!=', 'cancelado')
+            ->exists();
+
+        if ($tieneAlquilerFuturo) {
+            $mensaje = "No se puede dar de baja \"{$utileria->nombre}\" porque está asignada a uno o más alquileres futuros. Reasigná o cancelá esas reservas antes de darla de baja.";
+
+            if (request()->wantsJson()) {
+                return response()->json(['message' => $mensaje], 422);
+            }
+
+            return redirect()->route('utilerias.index')->with('error', $mensaje);
+        }
+
         $utileria->habilitado = 0;
         $utileria->save();
 

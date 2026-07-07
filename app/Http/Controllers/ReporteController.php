@@ -22,13 +22,31 @@ class ReporteController extends Controller
     /**
      * Generar PDF con el listado de socios.
      */
-    public function sociosPdf()
+    public function sociosPdf(Request $request)
     {
         $socios = Socio::with('barrio')->orderBy('apellido')->get();
+
+        $mensajeVacio = 'No hay socios registrados: no hay datos disponibles para generar este reporte.';
+
+        // Pre-chequeo AJAX: la vista consulta primero (?check=1) si hay datos.
+        // Si no hay, muestra el mensaje en la misma ventana sin abrir el preview.
+        if ($request->boolean('check')) {
+            return response()->json([
+                'has_data' => $socios->isNotEmpty(),
+                'message' => $mensajeVacio,
+            ]);
+        }
+
+        if ($socios->isEmpty()) {
+            return redirect()->route('reportes.index')->with('error', $mensajeVacio);
+        }
+
         $fecha = Carbon::now()->format('d/m/Y');
 
         $pdf = Pdf::loadView('reportes.pdf.socios', compact('socios', 'fecha'));
-        return $pdf->download('reporte_socios_' . date('Ymd_His') . '.pdf');
+        // stream() envía el PDF inline (Content-Disposition: inline) para mostrarlo
+        // como vista previa en el visor del navegador, desde donde se puede imprimir o guardar.
+        return $pdf->stream('reporte_socios_' . date('Ymd_His') . '.pdf');
     }
 
     /**
@@ -45,11 +63,24 @@ class ReporteController extends Controller
             ->orderBy('fecha_evento', 'asc')
             ->get();
 
-        $fecha = Carbon::now()->format('d/m/Y');
         $nombreMes = $this->getNombreMes($mes);
+        $mensajeVacio = "No hay alquileres registrados para {$nombreMes} de {$anio}: no hay datos disponibles para generar este reporte.";
+
+        if ($request->boolean('check')) {
+            return response()->json([
+                'has_data' => $alquileres->isNotEmpty(),
+                'message' => $mensajeVacio,
+            ]);
+        }
+
+        if ($alquileres->isEmpty()) {
+            return redirect()->route('reportes.index')->with('error', $mensajeVacio);
+        }
+
+        $fecha = Carbon::now()->format('d/m/Y');
 
         $pdf = Pdf::loadView('reportes.pdf.alquileres', compact('alquileres', 'fecha', 'mes', 'anio', 'nombreMes'));
-        return $pdf->download("reporte_alquileres_{$nombreMes}_{$anio}.pdf");
+        return $pdf->stream("reporte_alquileres_{$nombreMes}_{$anio}.pdf");
     }
 
     /**
@@ -65,6 +96,20 @@ class ReporteController extends Controller
             ->orderBy('fecha', 'asc')
             ->get();
 
+        $nombreMes = $this->getNombreMes($mes);
+        $mensajeVacio = "No hay movimientos de caja para {$nombreMes} de {$anio}: no hay datos disponibles para generar este reporte.";
+
+        if ($request->boolean('check')) {
+            return response()->json([
+                'has_data' => $movimientos->isNotEmpty(),
+                'message' => $mensajeVacio,
+            ]);
+        }
+
+        if ($movimientos->isEmpty()) {
+            return redirect()->route('reportes.index')->with('error', $mensajeVacio);
+        }
+
         $totalIngresos = Movimiento::whereMonth('fecha', $mes)
             ->whereYear('fecha', $anio)
             ->where('tipo', 'ingreso')
@@ -77,7 +122,6 @@ class ReporteController extends Controller
 
         $saldo = $totalIngresos - $totalEgresos;
         $fecha = Carbon::now()->format('d/m/Y');
-        $nombreMes = $this->getNombreMes($mes);
 
         $pdf = Pdf::loadView('reportes.pdf.caja', compact(
             'movimientos',
@@ -90,7 +134,7 @@ class ReporteController extends Controller
             'nombreMes'
         ));
 
-        return $pdf->download("reporte_caja_{$nombreMes}_{$anio}.pdf");
+        return $pdf->stream("reporte_caja_{$nombreMes}_{$anio}.pdf");
     }
 
     /**

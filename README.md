@@ -97,6 +97,18 @@ Asegurate de que el archivo .env apunte a SQLite:
 
 `DB_CONNECTION=sqlite`
 
+> **⚠️ Importante — La base NO se empaqueta.** En la app instalada, NativePHP crea una base SQLite **vacía** en la carpeta de datos del usuario (`%APPDATA%`) y solo ejecuta `migrate --force` al abrir; **nunca** corre `db:seed`. Por eso los datos base (usuario para iniciar sesión, sectores, utilería) se siembran mediante una **migración idempotente** (`database/migrations/*_seed_initial_data.php`), que sí corre como parte del `migrate`. Si agregás datos que deban existir en cada instalación, ponelos ahí (con `firstOrCreate` / `updateOrCreate`), no en un seeder.
+
+##### Nombre del Instalador:
+El nombre del `.exe` sale de `APP_NAME` (en `.env`). Con `APP_NAME=Centro-Jubilados` el instalador se genera como `Centro-Jubilados-X.X.X-setup.exe`. Ese nombre también se usa para el acceso directo, el nombre en "Desinstalar programas" y la carpeta de datos en `%APPDATA%`.
+
+##### Subir la Versión (obligatorio si ya hay instalaciones previas):
+NativePHP solo re-ejecuta las migraciones cuando cambia la versión de la app (compara la versión instalada contra la nueva). Si no la incrementás, un cliente que ya tenga una versión instalada **no** correrá las nuevas migraciones (ni la de siembra). Incrementá la versión en `config/nativephp.php`:
+
+```php
+'version' => env('NATIVEPHP_APP_VERSION', '1.0.1'), // subir en cada release
+```
+
 ##### Compilar Assets de Producción:
 Generá los archivos estáticos de Vite (Bootstrap, FullCalendar, etc.):
 
@@ -111,15 +123,19 @@ composer install --no-dev --optimize-autoloader
 ```
 
 ##### Generar el Build:
-Ejecutá el comando de NativePHP para Windows:
+Ejecutá el comando de NativePHP para Windows. Podés pasar la arquitectura como argumento (`x64` o `all`) para evitar el prompt interactivo:
 
-`php artisan native:build win`
-
-Seleccioná la arquitectura x64 o all cuando se te solicite.
+`php artisan native:build win x64`
 
 ##### Resultado:
-El instalador se generará en la carpeta dist/ con el nombre Laravel-X.X.X-setup.exe.
+El instalador se generará en la carpeta `dist/` con el nombre `Centro-Jubilados-X.X.X-setup.exe` (según `APP_NAME` y la versión).
 
 Nota: Una vez finalizado el build, recordá ejecutar `composer install` nuevamente (sin el flag --no-dev) para recuperar tus herramientas de desarrollo y testing locales.
+
+##### Credenciales de prueba en la app instalada:
+La migración de siembra deja estos usuarios disponibles en cada instalación:
+
+-   **Admin**: `admin@admin.com` / `enzoadmin`
+-   **Prueba**: `test@test.com` / `test1234`
 
 ---

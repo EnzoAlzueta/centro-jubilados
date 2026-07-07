@@ -92,7 +92,8 @@
                     <tbody>
                         @foreach($cuotas as $cuota)
                         <tr class="{{ $cuota->trashed() ? 'text-muted bg-light' : '' }}">
-                            <td>{{ $cuota->fecha_pago ? \Carbon\Carbon::parse($cuota->fecha_pago)->format('d/m/Y') :
+                            <td data-order="{{ $cuota->fecha_pago ? \Carbon\Carbon::parse($cuota->fecha_pago)->format('Ymd') : 0 }}">
+                                {{ $cuota->fecha_pago ? \Carbon\Carbon::parse($cuota->fecha_pago)->format('d/m/Y') :
                                 'N/A' }}</td>
                             <td>
                                 @if($cuota->socio)
@@ -149,9 +150,6 @@
                         @endforeach
                     </tbody>
                 </table>
-                <div class="mt-4">
-                    {{ $cuotas->links() }}
-                </div>
             </div>
         </div>
     </div>
@@ -199,9 +197,7 @@
                         "sortAscending": ": activar para ordenar columna ascendente",
                         "sortDescending": ": activar para ordenar columna descendente"
                     }
-                },
-                "paging": false, // Ya usamos la paginación de Laravel
-                "info": false // Desactivamos la info de datatables si usamos la paginación de Laravel
+                }
             });
         });
     </script>
