@@ -41,7 +41,7 @@
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
                     <div class="card-header bg-white border-0 pt-4 px-4">
-                        <h4 class="fw-bold mb-0">Nueva Reserva</h4>
+                        <h4 class="fw-bold mb-0" id="form-alquiler-title">Nueva Reserva</h4>
                     </div>
                     <div class="card-body p-4">
                         <form action="{{ route('alquileres.store') }}" method="POST" id="form-alquiler" novalidate>
@@ -179,6 +179,11 @@
                             <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
                                 <i class="bi bi-calendar-check me-2"></i> Confirmar Reserva
                             </button>
+
+                            <button type="button" id="btn-cancelar-edicion"
+                                class="btn btn-outline-secondary w-100 py-2 shadow-sm mt-2 d-none">
+                                <i class="bi bi-x-circle me-2"></i> Cancelar edición
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -277,12 +282,20 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             // TomSelect de socios
-            new TomSelect("#socio_id", {
+            const socioTomSelect = new TomSelect("#socio_id", {
                 sortField: {
                     field: "text",
                     direction: "asc"
                 }
             });
+
+            // Guardar estado original del formulario para poder volver a modo "Nueva reserva"
+            const formAlquiler = document.getElementById('form-alquiler');
+            const storeUrl = formAlquiler.getAttribute('action');
+            const submitBtn = formAlquiler.querySelector('button[type="submit"]');
+            const submitBtnOriginalHtml = submitBtn.innerHTML;
+            const formTitle = document.getElementById('form-alquiler-title');
+            const btnCancelarEdicion = document.getElementById('btn-cancelar-edicion');
 
             // Auto-completar Precio Total desde el Precio Base del Sector seleccionado
             const sectorSelect = document.getElementById('sector_id');
@@ -477,27 +490,26 @@
 
                         if (alquiler.socio_id) {
                             document.getElementById('es_socio').checked = true;
-                            document.getElementById('socio_id').value = alquiler.socio_id;
+                            socioTomSelect.setValue(alquiler.socio_id);
                             document.getElementById('campo-socio').classList.remove('d-none');
                             document.getElementById('campos-externo').classList.add('d-none');
                         } else {
                             document.getElementById('es_externo').checked = true;
-                            document.getElementsByName('solicitante_externo')[0].value = alquiler.solicitante_externo;
-                            document.getElementsByName('dni_solicitante_externo')[0].value = alquiler.dni_solicitante_externo;
+                            socioTomSelect.clear();
+                            document.getElementsByName('solicitante_externo')[0].value = alquiler.solicitante_externo || '';
+                            document.getElementsByName('dni_solicitante_externo')[0].value = alquiler.dni_solicitante_externo || '';
                             document.getElementById('campos-externo').classList.remove('d-none');
                             document.getElementById('campo-socio').classList.add('d-none');
                         }
 
-                        document.querySelectorAll('#utileria-container input[type="number"]').forEach(input => input.value = 0);
+                        document.querySelectorAll('#utileria-container input.utileria-input').forEach(input => input.value = 0);
                         if (alquiler.utilerias) {
                             alquiler.utilerias.forEach(u => {
-                                const input = document.querySelector('#utileria-container input[value="' + u.id + '"]');
-                                if (input) {
-                                    const quantityInput = input.parentElement.querySelector('input[type="number"]');
-                                    if (quantityInput) quantityInput.value = u.pivot.cantidad;
-                                }
+                                const quantityInput = document.querySelector('#utileria-container input.utileria-input[data-id="' + u.id + '"]');
+                                if (quantityInput) quantityInput.value = u.pivot.cantidad;
                             });
                         }
+                        updateUtileriaSummary();
 
                         const form = document.getElementById('form-alquiler');
                         form.action = '/alquileres/' + id;
@@ -509,12 +521,40 @@
                             form.appendChild(methodInput);
                         }
 
-                        document.querySelector('button[type="submit"]').innerHTML = '<i class="bi bi-save me-2"></i> Guardar Cambios';
+                        submitBtn.innerHTML = '<i class="bi bi-save me-2"></i> Guardar Cambios';
+                        formTitle.textContent = 'Editar Alquiler';
+                        btnCancelarEdicion.classList.remove('d-none');
                         const modalInstance = window.bootstrap.Modal.getInstance(document.getElementById('eventModal'));
                         if (modalInstance) modalInstance.hide();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     });
             });
+
+            // Volver a modo "Nueva reserva"
+            function resetFormToCreate() {
+                formAlquiler.reset();
+
+                // Quitar el _method=PUT para que vuelva a apuntar a store()
+                const methodInput = formAlquiler.querySelector('input[name="_method"]');
+                if (methodInput) methodInput.remove();
+                formAlquiler.action = storeUrl;
+
+                // Restaurar textos/botones
+                submitBtn.innerHTML = submitBtnOriginalHtml;
+                formTitle.textContent = 'Nueva Reserva';
+                btnCancelarEdicion.classList.add('d-none');
+
+                // Restaurar selector de socio (TomSelect) y visibilidad socio/externo
+                socioTomSelect.clear();
+                document.getElementById('es_socio').checked = true;
+                document.getElementById('campo-socio').classList.remove('d-none');
+                document.getElementById('campos-externo').classList.add('d-none');
+
+                // Refrescar el resumen de utilería (form.reset ya puso las cantidades en 0)
+                updateUtileriaSummary();
+            }
+
+            btnCancelarEdicion.addEventListener('click', resetFormToCreate);
 
             // Botón Cancelar/Eliminar Alquiler
             document.getElementById('btn-eliminar-alquiler').addEventListener('click', function () {

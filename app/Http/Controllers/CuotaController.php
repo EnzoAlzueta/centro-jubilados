@@ -36,10 +36,15 @@ class CuotaController extends Controller
             $query->where('anio', '=', $anio);
         }
 
-        $cuotas = $query->orderBy('anio', 'desc')
+        // Se devuelve la colección completa (filtrada) y DataTables se encarga del
+        // paginado/orden/búsqueda en el cliente, igual que el resto de las grillas del
+        // sistema. Antes se usaba paginate(10) de Laravel a la vez que DataTables, lo que
+        // provocaba que "Todos" mostrara sólo la primera página (año actual) y que el orden
+        // por fecha se rompiera. Ordenamos por fecha de pago descendente por defecto.
+        $cuotas = $query->orderBy('fecha_pago', 'desc')
+            ->orderBy('anio', 'desc')
             ->orderBy('mes', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+            ->get();
 
         return view('cuotas.index', compact('cuotas', 'mes', 'anio', 'estado'));
     }

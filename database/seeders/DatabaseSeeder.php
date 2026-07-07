@@ -58,5 +58,8 @@ class DatabaseSeeder extends Seeder
             'security_question' => '¿Cuál es el nombre de la mascota del sistema?',
             'security_answer' => bcrypt('tobi'),
         ]);
+
+        // 6. Usuario fijo para pruebas manuales (idempotente)
+        $this->call(TestUserSeeder::class);
     }
 }
