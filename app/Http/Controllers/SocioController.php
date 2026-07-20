@@ -33,7 +33,7 @@ class SocioController extends Controller
      */
     public function create()
     {
-        $barrios = Barrio::all();
+        $barrios = Barrio::where('habilitado', true)->orderBy('nombre')->get();
         $calles = Calle::where('habilitado', true)->get();
         return view('socios.create', compact('barrios', 'calles'));
     }
@@ -79,7 +79,12 @@ class SocioController extends Controller
     public function edit(string $id)
     {
         $socio = Socio::findOrFail($id);
-        $barrios = Barrio::all();
+        // Barrios habilitados + el barrio actual del socio (aunque esté dado de baja),
+        // para no forzar un cambio de barrio al editar otros datos.
+        $barrios = Barrio::where('habilitado', true)
+            ->orWhere('id', $socio->barrio_id)
+            ->orderBy('nombre')
+            ->get();
         $calles = Calle::where('habilitado', true)->get(); // Added this line
         return view('socios.edit', compact('socio', 'barrios', 'calles')); // Added 'calles' to compact
     }

@@ -15,10 +15,19 @@ class BarrioController extends Controller
     /**
      * Muestra una lista del recurso.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $barrios = Barrio::all();
-        return view('barrios.index', compact('barrios'));
+        $showDisabled = $request->get('ver_deshabilitadas', false);
+
+        $query = Barrio::query();
+
+        if (!$showDisabled) {
+            $query->where('habilitado', 1);
+        }
+
+        $barrios = $query->orderBy('nombre')->get();
+
+        return view('barrios.index', compact('barrios', 'showDisabled'));
     }
 
     /**
@@ -84,18 +93,16 @@ class BarrioController extends Controller
     }
 
     /**
-     * Elimina el recurso especificado del almacenamiento.
+     * Deshabilita (borrado lógico) el barrio.
+     * Los socios existentes conservan su barrio; solo deja de estar
+     * disponible para nuevas altas hasta que se lo restaure desde Editar.
      */
     public function destroy(Barrio $barrio)
     {
-        if ($barrio->socios()->exists()) {
-            return redirect()->route('barrios.index')
-                ->with('error', 'No se puede eliminar el barrio porque tiene socios asociados (incluyendo deshabilitados).');
-        }
-
-        $barrio->delete();
+        $barrio->habilitado = 0;
+        $barrio->save();
 
         return redirect()->route('barrios.index')
-            ->with('success', 'Barrio eliminado correctamente');
+            ->with('success', 'Barrio dado de baja correctamente.');
     }
 }

@@ -6,7 +6,17 @@
                 <h2 class="p-2 fw-bold">Gestión de Calles</h2>
             </div>
 
-            <div>
+            <div class="d-flex gap-2">
+                @if($showDisabled ?? false)
+                <a href="{{ route('calles.index') }}" class="btn btn-outline-primary px-3">
+                    <i class="bi bi-signpost-split"></i> Ver Solo Activas
+                </a>
+                @else
+                <a href="{{ route('calles.index', ['ver_deshabilitadas' => 1]) }}"
+                    class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-signpost-split"></i> Ver Todas (Incluir Deshabilitadas)
+                </a>
+                @endif
                 <a href="{{ route('calles.create') }}" class="btn btn-primary px-3">
                     <i class="bi bi-signpost-split"></i> Ingresar Nueva Calle
                 </a>
@@ -39,7 +49,7 @@
                 </thead>
                 <tbody>
                     @foreach($calles as $calle)
-                    <tr>
+                    <tr class="{{ $calle->habilitado == 0 ? 'opacity-50 grayscale' : '' }}">
                         <td>{{ $calle->id }}</td>
                         <td>{{ $calle->nombre }}</td>
                         <td>
@@ -57,6 +67,7 @@
                                     <i class="bi bi-pen"></i>
                                 </a>
 
+                                @if($calle->habilitado == 1)
                                 <form action="{{ route('calles.destroy', $calle->id) }}" method="POST"
                                     onsubmit="return confirm('¿Estás seguro de deshabilitar esta calle?');"
                                     style="display:inline;">
@@ -66,6 +77,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

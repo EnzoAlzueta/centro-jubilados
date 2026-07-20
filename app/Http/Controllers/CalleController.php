@@ -10,10 +10,19 @@ class CalleController extends Controller
     /**
      * Muestra la lista de calles.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $calles = Calle::all();
-        return view('calles.index', compact('calles'));
+        $showDisabled = $request->get('ver_deshabilitadas', false);
+
+        $query = Calle::query();
+
+        if (!$showDisabled) {
+            $query->where('habilitado', 1);
+        }
+
+        $calles = $query->orderBy('nombre')->get();
+
+        return view('calles.index', compact('calles', 'showDisabled'));
     }
 
     /**
