@@ -107,10 +107,28 @@ class SectorController extends Controller
 
     /**
      * Elimina el recurso especificado del almacenamiento (lógico).
+     * No se permite la baja si el sector tiene alquileres futuros
+     * no cancelados (mismo criterio que utilería).
      */
     public function destroy($id)
     {
         $sector = Sector::findOrFail($id);
+
+        $tieneAlquilerFuturo = $sector->alquileres()
+            ->whereDate('fecha_evento', '>=', now()->toDateString())
+            ->where('estado', '!=', 'cancelado')
+            ->exists();
+
+        if ($tieneAlquilerFuturo) {
+            $mensaje = "No se puede dar de baja \"{$sector->nombre}\" porque tiene uno o más alquileres futuros. Reasigná o cancelá esas reservas antes de darlo de baja.";
+
+            if (request()->wantsJson()) {
+                return response()->json(['message' => $mensaje], 422);
+            }
+
+            return redirect()->route('sectores.index')->with('error', $mensaje);
+        }
+
         $sector->habilitado = 0;
         $sector->save();
 

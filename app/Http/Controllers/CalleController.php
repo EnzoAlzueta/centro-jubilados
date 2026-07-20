@@ -90,10 +90,29 @@ class CalleController extends Controller
 
     /**
      * Deshabilita (borrado lógico) la calle.
+     * No se permite la baja mientras haya socios con esa calle asignada:
+     * se informa quiénes son para poder reasignarlos primero.
      */
     public function destroy($id)
     {
         $calle = Calle::findOrFail($id);
+
+        $socios = $calle->socios()->orderBy('apellido')->orderBy('nombre')->get();
+
+        if ($socios->isNotEmpty()) {
+            $maxListado = 10;
+            $lista = $socios->take($maxListado)
+                ->map(fn ($s) => "{$s->apellido}, {$s->nombre} (N° {$s->numero_socio})")
+                ->implode(' — ');
+
+            if ($socios->count() > $maxListado) {
+                $lista .= ' — y ' . ($socios->count() - $maxListado) . ' más';
+            }
+
+            return redirect()->route('calles.index')
+                ->with('error', "No se puede dar de baja la calle \"{$calle->nombre}\" porque tiene {$socios->count()} socio(s) asignado(s): {$lista}. Reasignales otra calle antes de darla de baja.");
+        }
+
         $calle->habilitado = 0;
         $calle->save();
 
