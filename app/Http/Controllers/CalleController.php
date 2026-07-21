@@ -38,6 +38,24 @@ class CalleController extends Controller
      */
     public function store(Request $request)
     {
+        // Si ya existe una calle con ese nombre pero está dada de baja,
+        // se la restaura en lugar de rechazar el nombre como duplicado.
+        $deshabilitada = Calle::where('nombre', trim((string) $request->input('nombre')))
+            ->where('habilitado', 0)
+            ->first();
+
+        if ($deshabilitada) {
+            $deshabilitada->habilitado = 1;
+            $deshabilitada->save();
+
+            if ($request->has('is_ajax')) {
+                return response()->json(['id' => $deshabilitada->id, 'nombre' => $deshabilitada->nombre]);
+            }
+
+            return redirect()->route('calles.index')
+                ->with('success', "La calle \"{$deshabilitada->nombre}\" ya existía y estaba dada de baja: se la restauró.");
+        }
+
         $request->validate([
             'nombre' => 'required|string|max:255|unique:calles,nombre'
         ]);

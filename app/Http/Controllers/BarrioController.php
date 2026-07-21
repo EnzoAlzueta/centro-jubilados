@@ -43,6 +43,24 @@ class BarrioController extends Controller
      */
     public function store(Request $request)
     {
+        // Si ya existe un barrio con ese nombre pero está dado de baja,
+        // se lo restaura en lugar de rechazar el nombre como duplicado.
+        $deshabilitado = Barrio::where('nombre', trim((string) $request->input('nombre')))
+            ->where('habilitado', 0)
+            ->first();
+
+        if ($deshabilitado) {
+            $deshabilitado->habilitado = 1;
+            $deshabilitado->save();
+
+            if ($request->has('is_ajax')) {
+                return response()->json(['id' => $deshabilitado->id, 'nombre' => $deshabilitado->nombre]);
+            }
+
+            return redirect()->route('barrios.index')
+                ->with('success', "El barrio \"{$deshabilitado->nombre}\" ya existía y estaba dado de baja: se lo restauró.");
+        }
+
         $request->validate([
             'nombre' => 'required|string|unique:barrios,nombre|max:255',
         ]);
@@ -94,11 +112,27 @@ class BarrioController extends Controller
 
     /**
      * Deshabilita (borrado lógico) el barrio.
-     * Los socios existentes conservan su barrio; solo deja de estar
-     * disponible para nuevas altas hasta que se lo restaure desde Editar.
+     * No se permite la baja mientras haya socios con ese barrio asignado:
+     * se informa quiénes son para poder reasignarlos primero.
      */
     public function destroy(Barrio $barrio)
     {
+        $socios = $barrio->socios()->orderBy('apellido')->orderBy('nombre')->get();
+
+        if ($socios->isNotEmpty()) {
+            $maxListado = 10;
+            $lista = $socios->take($maxListado)
+                ->map(fn ($s) => "{$s->apellido}, {$s->nombre} (N° {$s->numero_socio})")
+                ->implode(' — ');
+
+            if ($socios->count() > $maxListado) {
+                $lista .= ' — y ' . ($socios->count() - $maxListado) . ' más';
+            }
+
+            return redirect()->route('barrios.index')
+                ->with('error', "No se puede dar de baja el barrio \"{$barrio->nombre}\" porque tiene {$socios->count()} socio(s) asignado(s): {$lista}. Reasignales otro barrio antes de darlo de baja.");
+        }
+
         $barrio->habilitado = 0;
         $barrio->save();
 
