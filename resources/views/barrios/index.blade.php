@@ -6,7 +6,17 @@
                 <h2 class="p-2 fw-bold">Gestión de Barrios</h2>
             </div>
 
-            <div>
+            <div class="d-flex gap-2">
+                @if($showDisabled ?? false)
+                <a href="{{ route('barrios.index') }}" class="btn btn-outline-primary px-3">
+                    <i class="bi bi-houses"></i> Ver Solo Activos
+                </a>
+                @else
+                <a href="{{ route('barrios.index', ['ver_deshabilitadas' => 1]) }}"
+                    class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-houses"></i> Ver Todos (Incluir Deshabilitados)
+                </a>
+                @endif
                 <a href="{{ route('barrios.create') }}" class="btn btn-primary px-3">
                     <i class="bi bi-houses"></i> Ingresar Nuevo Barrio
                 </a>
@@ -34,22 +44,33 @@
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Nombre</th>
+                        <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($barrios as $barrio)
-                    <tr>
+                    <tr class="{{ $barrio->habilitado == 0 ? 'opacity-50 grayscale' : '' }}">
                         <td>{{ $barrio->id }}</td>
                         <td>{{ $barrio->nombre }}</td>
+                        <td>
+                            @if($barrio->habilitado == 1)
+                            <span class="bg-success-subtle text-success border border-success-subtle px-2 rounded">
+                                Activo </span>
+                            @else
+                            <span class="bg-danger-subtle text-danger border border-danger-subtle px-2 rounded">
+                                Deshabilitado </span>
+                            @endif
+                        </td>
                         <td>
                             <div class="d-flex gap-2">
                                 <a href="{{ route('barrios.edit', $barrio->id) }}" class="btn btn-outline-success">
                                     <i class="bi bi-pen"></i>
                                 </a>
 
+                                @if($barrio->habilitado == 1)
                                 <form action="{{ route('barrios.destroy', $barrio->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar este barrio?');"
+                                    onsubmit="return confirm('¿Estás seguro de dar de baja este barrio?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
@@ -57,6 +78,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

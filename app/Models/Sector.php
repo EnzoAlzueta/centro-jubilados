@@ -10,4 +10,9 @@ class Sector extends Model
     use HasFactory;
     protected $table = 'sectors';
     protected $guarded = [];
+
+    public function alquileres()
+    {
+        return $this->hasMany(Alquiler::class);
+    }
 }

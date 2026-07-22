@@ -42,6 +42,33 @@ class UtileriaController extends Controller
      */
     public function store(Request $request)
     {
+        // Si ya existe una utilería con ese nombre pero está dada de baja,
+        // se la restaura (actualizando su stock) en lugar de rechazar el
+        // nombre como duplicado.
+        $deshabilitada = Utileria::where('nombre', trim((string) $request->input('nombre')))
+            ->where('habilitado', 0)
+            ->first();
+
+        if ($deshabilitada) {
+            $validated = $request->validate([
+                'stock_total' => 'required|integer|min:0',
+            ]);
+
+            $deshabilitada->fill($validated);
+            $deshabilitada->habilitado = 1;
+            $deshabilitada->save();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Utilería restaurada correctamente',
+                    'data' => $deshabilitada
+                ], 200);
+            }
+
+            return redirect()->route('utilerias.index')
+                ->with('success', "La utilería \"{$deshabilitada->nombre}\" ya existía y estaba dada de baja: se la restauró.");
+        }
+
         $validated = $request->validate([
             'nombre' => 'required|string|unique:utilerias,nombre|max:255',
             'stock_total' => 'required|integer|min:0',

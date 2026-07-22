@@ -21,6 +21,19 @@
                     @csrf
                     @method('PUT')
 
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="hidden" name="habilitado" value="0">
+                            <input class="form-check-input" type="checkbox" name="habilitado" id="habilitado" value="1"
+                                @checked(old('habilitado', $barrio->habilitado) == 1)>
+                            <label class="form-check-label" for="habilitado">
+                                Habilitado
+                            </label>
+                        </div>
+                        <div class="form-text">Si lo desmarcás, el barrio no podrá seleccionarse para nuevos socios.
+                            Los socios que ya lo tienen asignado lo conservan.</div>
+                    </div>
+
                     {{-- Campo Nombre (Input normal de Bootstrap) --}}
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre del Barrio</label>

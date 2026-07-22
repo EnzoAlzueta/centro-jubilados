@@ -9,47 +9,37 @@
         </div>
 
         <div class="card border-0 shadow-sm">
-            @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show mb-4 py-2 shadow-sm" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i> Error en el formulario. Revisa los campos.
-                <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
+            <div class="card-body p-4">
+                @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show mb-4 py-2 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Error en el formulario. Revisa los campos.
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @endif
 
-            <form action="{{ route('barrios.store') }}" method="POST" id="form-crear-barrio">
-                @csrf
+                <form action="{{ route('barrios.store') }}" method="POST" id="form-crear-barrio">
+                    @csrf
 
-                {{-- Campo Nombre (Input normal de Bootstrap) --}}
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre del Barrio</label>
-                    <input type="text" name="nombre" id="nombre"
-                        class="form-control @error('nombre') is-invalid @enderror" placeholder="Ej: San Vicente"
-                        value="{{ old('nombre') }}" required>
-                    @error('nombre')
-                    <div class="invalid-feedback">
-                        {{ $message }}
+                    {{-- Campo Nombre (Input normal de Bootstrap) --}}
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Barrio</label>
+                        <input type="text" name="nombre" id="nombre"
+                            class="form-control @error('nombre') is-invalid @enderror" placeholder="Ej: San Vicente"
+                            value="{{ old('nombre') }}" required>
+                        @error('nombre')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                        @enderror
                     </div>
-                    @enderror
-                </div>
-                {{-- Botones de acción --}}
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success">Guardar Barrio</button>
-                    <a href="{{ route('barrios.index') }}" class="btn btn-secondary">Cancelar</a>
-                </div>
-            </form>
+                    {{-- Botones de acción --}}
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Guardar Barrio</button>
+                        <a href="{{ route('barrios.index') }}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
 
+            </div>
         </div>
     </div>
-    </div>
-
-    {{-- Script para activar TomSelect --}}
-    <script type="module">
-        new TomSelect("#select-zona", {
-            create: true, // Permite al usuario escribir una opción nueva si no existe
-            sortField: {
-                field: "text",
-                direction: "asc"
-            }
-        });
-    </script>
 </x-app-layout>

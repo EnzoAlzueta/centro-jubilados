@@ -42,6 +42,34 @@ class SectorController extends Controller
      */
     public function store(Request $request)
     {
+        // Si ya existe un sector con ese nombre pero está dado de baja,
+        // se lo restaura (actualizando sus datos) en lugar de rechazar el
+        // nombre como duplicado.
+        $deshabilitado = Sector::where('nombre', trim((string) $request->input('nombre')))
+            ->where('habilitado', 0)
+            ->first();
+
+        if ($deshabilitado) {
+            $validated = $request->validate([
+                'descripcion' => 'nullable|string|max:1000',
+                'precio_base' => 'nullable|numeric|min:0',
+            ]);
+
+            $deshabilitado->fill($validated);
+            $deshabilitado->habilitado = 1;
+            $deshabilitado->save();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Sector restaurado correctamente',
+                    'data' => $deshabilitado
+                ], 200);
+            }
+
+            return redirect()->route('sectores.index')
+                ->with('success', "El sector \"{$deshabilitado->nombre}\" ya existía y estaba dado de baja: se lo restauró.");
+        }
+
         $validated = $request->validate([
             'nombre' => 'required|string|unique:sectors,nombre|max:255',
             'descripcion' => 'nullable|string|max:1000',
@@ -107,10 +135,28 @@ class SectorController extends Controller
 
     /**
      * Elimina el recurso especificado del almacenamiento (lógico).
+     * No se permite la baja si el sector tiene alquileres futuros
+     * no cancelados (mismo criterio que utilería).
      */
     public function destroy($id)
     {
         $sector = Sector::findOrFail($id);
+
+        $tieneAlquilerFuturo = $sector->alquileres()
+            ->whereDate('fecha_evento', '>=', now()->toDateString())
+            ->where('estado', '!=', 'cancelado')
+            ->exists();
+
+        if ($tieneAlquilerFuturo) {
+            $mensaje = "No se puede dar de baja \"{$sector->nombre}\" porque tiene uno o más alquileres futuros. Reasigná o cancelá esas reservas antes de darlo de baja.";
+
+            if (request()->wantsJson()) {
+                return response()->json(['message' => $mensaje], 422);
+            }
+
+            return redirect()->route('sectores.index')->with('error', $mensaje);
+        }
+
         $sector->habilitado = 0;
         $sector->save();
 

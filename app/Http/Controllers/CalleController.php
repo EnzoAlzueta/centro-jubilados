@@ -10,10 +10,19 @@ class CalleController extends Controller
     /**
      * Muestra la lista de calles.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $calles = Calle::all();
-        return view('calles.index', compact('calles'));
+        $showDisabled = $request->get('ver_deshabilitadas', false);
+
+        $query = Calle::query();
+
+        if (!$showDisabled) {
+            $query->where('habilitado', 1);
+        }
+
+        $calles = $query->orderBy('nombre')->get();
+
+        return view('calles.index', compact('calles', 'showDisabled'));
     }
 
     /**
@@ -29,6 +38,24 @@ class CalleController extends Controller
      */
     public function store(Request $request)
     {
+        // Si ya existe una calle con ese nombre pero está dada de baja,
+        // se la restaura en lugar de rechazar el nombre como duplicado.
+        $deshabilitada = Calle::where('nombre', trim((string) $request->input('nombre')))
+            ->where('habilitado', 0)
+            ->first();
+
+        if ($deshabilitada) {
+            $deshabilitada->habilitado = 1;
+            $deshabilitada->save();
+
+            if ($request->has('is_ajax')) {
+                return response()->json(['id' => $deshabilitada->id, 'nombre' => $deshabilitada->nombre]);
+            }
+
+            return redirect()->route('calles.index')
+                ->with('success', "La calle \"{$deshabilitada->nombre}\" ya existía y estaba dada de baja: se la restauró.");
+        }
+
         $request->validate([
             'nombre' => 'required|string|max:255|unique:calles,nombre'
         ]);
@@ -81,10 +108,29 @@ class CalleController extends Controller
 
     /**
      * Deshabilita (borrado lógico) la calle.
+     * No se permite la baja mientras haya socios con esa calle asignada:
+     * se informa quiénes son para poder reasignarlos primero.
      */
     public function destroy($id)
     {
         $calle = Calle::findOrFail($id);
+
+        $socios = $calle->socios()->orderBy('apellido')->orderBy('nombre')->get();
+
+        if ($socios->isNotEmpty()) {
+            $maxListado = 10;
+            $lista = $socios->take($maxListado)
+                ->map(fn ($s) => "{$s->apellido}, {$s->nombre} (N° {$s->numero_socio})")
+                ->implode(' — ');
+
+            if ($socios->count() > $maxListado) {
+                $lista .= ' — y ' . ($socios->count() - $maxListado) . ' más';
+            }
+
+            return redirect()->route('calles.index')
+                ->with('error', "No se puede dar de baja la calle \"{$calle->nombre}\" porque tiene {$socios->count()} socio(s) asignado(s): {$lista}. Reasignales otra calle antes de darla de baja.");
+        }
+
         $calle->habilitado = 0;
         $calle->save();
 
