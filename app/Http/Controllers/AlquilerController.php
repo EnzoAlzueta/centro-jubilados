@@ -106,13 +106,18 @@ class AlquilerController extends Controller
 
         try {
             return DB::transaction(function () use ($validated, $request) {
+                // Si la seña cubre el precio total, la reserva nace confirmada
+                // (mismo criterio que registrarPago).
+                $señaPagada = $request->seña_pagada ?? 0;
+                $pagoCompleto = $validated['precio'] > 0 && $señaPagada >= $validated['precio'];
+
                 $alquiler = Alquiler::create([
                     'sector_id' => $validated['sector_id'],
                     'fecha_evento' => $validated['fecha_evento'],
                     'tipo_evento' => $validated['tipo_evento'],
                     'precio' => $validated['precio'],
-                    'seña_pagada' => $request->seña_pagada ?? 0,
-                    'estado' => 'reservado',
+                    'seña_pagada' => $señaPagada,
+                    'estado' => $pagoCompleto ? 'confirmado' : 'reservado',
                     'socio_id' => $request->socio_id,
                     'solicitante_externo' => $request->solicitante_externo,
                     'dni_solicitante_externo' => $request->dni_solicitante_externo,
@@ -208,6 +213,15 @@ class AlquilerController extends Controller
             'solicitante_externo' => $request->solicitante_externo ?: null,
             'dni_solicitante_externo' => $request->dni_solicitante_externo ?: null,
         ]);
+
+        // Recalcula el estado según lo pagado (sin tocar cancelados/finalizados):
+        // seña que cubre el precio total => confirmado; si no, vuelve a reservado.
+        if (in_array($alquiler->estado, ['reservado', 'confirmado'])) {
+            $alquiler->estado = ($alquiler->precio > 0 && $alquiler->seña_pagada >= $alquiler->precio)
+                ? 'confirmado'
+                : 'reservado';
+            $alquiler->save();
+        }
 
         if ($request->has('utilerias')) {
             $syncData = [];

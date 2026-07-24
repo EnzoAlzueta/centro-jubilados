@@ -380,7 +380,8 @@
                             estadoBadge.innerText = estadoLabel;
                             estadoBadge.className = 'badge ';
                             if (estado === 'reservado') estadoBadge.classList.add('bg-info', 'text-dark');
-                            else if (estado === 'pagado') estadoBadge.classList.add('bg-success');
+                            else if (estado === 'confirmado') estadoBadge.classList.add('bg-success');
+                            else if (estado === 'finalizado') estadoBadge.classList.add('bg-secondary');
                             else estadoBadge.classList.add('bg-danger');
 
                             const utilSection = document.getElementById('event-utilerias-section');
