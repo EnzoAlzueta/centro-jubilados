@@ -69,7 +69,7 @@
 
                                 @if($calle->habilitado == 1)
                                 <form action="{{ route('calles.destroy', $calle->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de deshabilitar esta calle?');"
+                                    onsubmit="return confirmarEnvio(event, '¿Estás seguro de deshabilitar esta calle?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
