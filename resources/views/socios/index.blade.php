@@ -82,7 +82,7 @@
                                 </a>
 
                                 <form action="{{ route('socios.destroy', $socio->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar este socio?');"
+                                    onsubmit="return confirmarEnvio(event, '¿Estás seguro de eliminar este socio?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')

@@ -279,6 +279,23 @@
     </div>
 
     <script>
+        // Cierra el modal de detalle y espera a que termine la animación:
+        // Bootstrap no encima bien dos modales, así que los de confirmación
+        // y aviso se muestran recién cuando este quedó oculto.
+        function ocultarModalDetalle() {
+            return new Promise((resolve) => {
+                const el = document.getElementById('eventModal');
+                const instancia = window.bootstrap.Modal.getInstance(el);
+
+                if (!instancia || !el.classList.contains('show')) {
+                    return resolve();
+                }
+
+                el.addEventListener('hidden.bs.modal', () => resolve(), { once: true });
+                instancia.hide();
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
 
             // TomSelect de socios
@@ -380,7 +397,8 @@
                             estadoBadge.innerText = estadoLabel;
                             estadoBadge.className = 'badge ';
                             if (estado === 'reservado') estadoBadge.classList.add('bg-info', 'text-dark');
-                            else if (estado === 'pagado') estadoBadge.classList.add('bg-success');
+                            else if (estado === 'confirmado') estadoBadge.classList.add('bg-success');
+                            else if (estado === 'finalizado') estadoBadge.classList.add('bg-secondary');
                             else estadoBadge.classList.add('bg-danger');
 
                             const utilSection = document.getElementById('event-utilerias-section');
@@ -426,13 +444,13 @@
                         })
                         .catch(error => {
                             console.error('Fetch error:', error);
-                            alert('No se pudieron cargar los detalles de la reserva.');
+                            avisar('No se pudieron cargar los detalles de la reserva.', { titulo: 'Error' });
                         });
                 }
             });
 
             // Registrar Pago de Saldo
-            document.getElementById('form-registrar-pago').addEventListener('submit', function (e) {
+            document.getElementById('form-registrar-pago').addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const alquilerId = document.getElementById('btn-editar-alquiler').getAttribute('data-id');
                 const formData = new FormData(this);
@@ -446,13 +464,13 @@
                     body: formData
                 })
                     .then(response => response.json())
-                    .then(data => {
+                    .then(async data => {
                         if (data.error) {
-                            alert(data.error);
+                            await ocultarModalDetalle();
+                            avisar(data.error, { titulo: 'No se pudo registrar el pago' });
                         } else {
                             // Cerrar modal actual
-                            const modalInstance = window.bootstrap.Modal.getInstance(document.getElementById('eventModal'));
-                            if (modalInstance) modalInstance.hide();
+                            await ocultarModalDetalle();
 
                             // Mostrar mensaje de éxito en el contenedor específico
                             const alertContainer = document.getElementById('ajax-alert-container');
@@ -467,9 +485,10 @@
                             calendar.refetchEvents();
                         }
                     })
-                    .catch(error => {
+                    .catch(async error => {
                         console.error('Payment error:', error);
-                        alert('Error al procesar el pago.');
+                        await ocultarModalDetalle();
+                        avisar('Error al procesar el pago.', { titulo: 'Error' });
                     });
             });
             calendar.render();
@@ -557,28 +576,46 @@
             btnCancelarEdicion.addEventListener('click', resetFormToCreate);
 
             // Botón Cancelar/Eliminar Alquiler
-            document.getElementById('btn-eliminar-alquiler').addEventListener('click', function () {
+            document.getElementById('btn-eliminar-alquiler').addEventListener('click', async function () {
                 const id = this.getAttribute('data-id');
-                if (confirm('¿Está seguro de que desea cancelar esta reserva?')) {
-                    const devolucion = confirm('¿Desea registrar la devolución de la seña/pago en la caja?');
-                    fetch('/alquileres/' + id, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ devolucion: devolucion ? 1 : 0 })
-                    })
-                        .then(response => {
-                            if (response.ok) {
-                                alert('Reserva cancelada correctamente.');
-                                location.reload();
-                            } else {
-                                alert('Error al cancelar la reserva.');
-                            }
-                        });
+                const modalDetalle = window.bootstrap.Modal.getInstance(document.getElementById('eventModal'));
+
+                await ocultarModalDetalle();
+
+                const confirmado = await confirmarAccion('¿Está seguro de que desea cancelar esta reserva?', {
+                    titulo: 'Cancelar reserva',
+                    textoAceptar: 'Sí, cancelar reserva'
+                });
+
+                if (!confirmado) {
+                    // Vuelve al detalle para no perder el contexto
+                    if (modalDetalle) modalDetalle.show();
+                    return;
                 }
+
+                const devolucion = await confirmarAccion('¿Desea registrar la devolución de la seña/pago en la caja?', {
+                    titulo: 'Devolución de la seña',
+                    textoAceptar: 'Sí, devolver',
+                    claseAceptar: 'btn-warning'
+                });
+
+                fetch('/alquileres/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ devolucion: devolucion ? 1 : 0 })
+                })
+                    .then(async response => {
+                        if (response.ok) {
+                            await avisar('Reserva cancelada correctamente.', { titulo: 'Reserva cancelada' });
+                            location.reload();
+                        } else {
+                            avisar('Error al cancelar la reserva.', { titulo: 'Error' });
+                        }
+                    });
             });
 
             // Toggle entre Socio y Externo

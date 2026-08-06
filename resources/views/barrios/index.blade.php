@@ -70,7 +70,7 @@
 
                                 @if($barrio->habilitado == 1)
                                 <form action="{{ route('barrios.destroy', $barrio->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de dar de baja este barrio?');"
+                                    onsubmit="return confirmarEnvio(event, '¿Estás seguro de dar de baja este barrio?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')

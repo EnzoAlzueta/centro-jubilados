@@ -235,7 +235,7 @@
             const checkedBoxes = document.querySelectorAll('.mes-checkbox:checked');
             if (checkedBoxes.length === 0) {
                 e.preventDefault();
-                alert('Debe seleccionar al menos un mes para registrar el pago.');
+                avisar('Debe seleccionar al menos un mes para registrar el pago.');
             }
         });
     </script>

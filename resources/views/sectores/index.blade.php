@@ -70,7 +70,7 @@
 
                                 @if($sector->habilitado == 1)
                                 <form action="{{ route('sectores.destroy', $sector->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar esta utilería?');"
+                                    onsubmit="return confirmarEnvio(event, '¿Estás seguro de dar de baja este sector?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')

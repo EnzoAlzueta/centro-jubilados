@@ -72,7 +72,7 @@
 
                                 @if($utileria->habilitado == 1)
                                 <form action="{{ route('utilerias.destroy', $utileria->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Estás seguro de eliminar esta utilería?');"
+                                    onsubmit="return confirmarEnvio(event, '¿Estás seguro de dar de baja esta utilería?');"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
