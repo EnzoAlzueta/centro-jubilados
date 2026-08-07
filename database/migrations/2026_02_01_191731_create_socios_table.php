@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('apellido');
 
             $table->foreignId('barrio_id')->constrained('barrios');
-            $table->string('calle'); #preguntar si hacemos tabla o no.
+            $table->foreignId('calle_id')->constrained('calles'); #preguntar si hacemos tabla o no.
             $table->string('altura');
             $table->string('telefono')->nullable();
             $table->string('email')->nullable();

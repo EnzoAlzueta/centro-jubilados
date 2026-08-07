@@ -465,9 +465,10 @@
                 })
                     .then(response => response.json())
                     .then(async data => {
-                        if (data.error) {
+                        if (data.errors) {
                             await ocultarModalDetalle();
-                            avisar(data.error, { titulo: 'No se pudo registrar el pago' });
+                            avisar(data.errors.monto, { titulo: 'No se pudo registrar el pago' });
+                            return;
                         } else {
                             // Cerrar modal actual
                             await ocultarModalDetalle();

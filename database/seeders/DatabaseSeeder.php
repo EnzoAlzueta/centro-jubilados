@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Barrio;
+use App\Models\Calle;
 use App\Models\Socio;
 use App\Models\Sector;
 use App\Models\Utileria;
@@ -19,6 +20,10 @@ class DatabaseSeeder extends Seeder
         // 1. Creamos el Barrio base
         $barrio = Barrio::create([
             'nombre' => 'Centro',
+        ]);
+
+        $calle = Calle::create([
+            'nombre' => 'Estanislao Zeballos',
         ]);
 
         // 2. Creamos los Sectores (Lugares para alquilar)

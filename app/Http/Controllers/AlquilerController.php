@@ -275,6 +275,11 @@ class AlquilerController extends Controller
 
         $validated = $request->validate([
             'monto' => 'required|numeric|min:0.01|max:'.$pendiente,
+        ], [
+            'monto.required' => 'El monto no debe estar vacio',
+            'monto.numeric' => 'El monto debe ser un valor numérico',
+            'monto.min' => 'El monto debe ser mayor a $0',
+            'monto.max' => 'El monto no debe superar $' . $pendiente
         ]);
 
         try {

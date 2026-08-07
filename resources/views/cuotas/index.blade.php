@@ -159,18 +159,11 @@
             if (!await confirmarAccion('¿Estás seguro de anular este pago de cuota?')) {
                 return;
             }
-
-            const reintegro = await confirmarAccion(
-                '¿Deseas realizar la devolución del dinero y registrar el egreso en la caja?',
-                { titulo: 'Devolución del dinero', textoAceptar: 'Sí, devolver', claseAceptar: 'btn-warning' }
-            );
-
-            document.getElementById('reintegro-' + id).value = reintegro ? '1' : '0';
             document.getElementById('delete-form-' + id).submit();
         }
 
         async function confirmarRestauracion(id) {
-            const mensaje = '¿Deseas restaurar esta cuota anulada?\n\nNota: Si habías realizado una devolución de dinero, deberás registrar manualmente el ingreso en caja si corresponde.';
+            const mensaje = '¿Deseas restaurar esta cuota anulada?\n\nNota: Deberá registrar manualmente el ingreso en caja.';
 
             if (await confirmarAccion(mensaje, { titulo: 'Restaurar cuota', textoAceptar: 'Sí, restaurar', claseAceptar: 'btn-success' })) {
                 document.getElementById('restore-form-' + id).submit();

@@ -22,7 +22,7 @@ class SocioFactory extends Factory
             'nombre' => fake()->firstName(),
             'apellido' => fake()->lastName(),
             'barrio_id' => 1, 
-            'calle' => fake()->streetName(),
+            'calle_id' => 1,
             'altura' => fake()->buildingNumber(),
             'fecha_nacimiento' => fake()->date(),
             'habilitado' => true,

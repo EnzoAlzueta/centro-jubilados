@@ -255,27 +255,24 @@ class CuotaController extends Controller
         $conReintegro = $request->has('reintegro') && $request->reintegro == '1';
 
         try {
-            DB::transaction(function () use ($cuota, $conReintegro) {
-                if ($conReintegro) {
+            DB::transaction(function () use ($cuota) {
                     // Generar movimiento de egreso por la anulación para mantener auditoría
-                    Movimiento::create([
-                        'fecha' => now()->toDateString(),
-                        'tipo' => 'egreso',
-                        'concepto' => "Anulación/Devolución Cuota: {$cuota->socio->apellido}, {$cuota->socio->nombre} ({$cuota->mes}/{$cuota->anio})",
-                        'monto' => $cuota->monto,
-                        'categoria' => 'cuota',
-                        'referencia_id' => $cuota->id,
-                        'referencia_type' => Cuota::class
-                    ]);
-                }
+                Movimiento::create([
+                    'fecha' => now()->toDateString(),
+                    'tipo' => 'egreso',
+                    'concepto' => "Anulación/Devolución Cuota: {$cuota->socio->apellido}, {$cuota->socio->nombre} ({$cuota->mes}/{$cuota->anio})",
+                    'monto' => $cuota->monto,
+                    'categoria' => 'cuota',
+                    'referencia_id' => $cuota->id,
+                    'referencia_type' => Cuota::class
+                ]);
+            
 
                 // Borrado Lógico de la cuenta
                 $cuota->delete();
             });
 
-            $mensaje = $conReintegro
-                ? 'Cuota eliminada lógicamente y reintegro asimilado en caja.'
-                : 'Cuota eliminada lógicamente (sin reintegro de dinero).';
+            $mensaje = 'Cuota eliminada lógicamente y reintegro asimilado en caja.';
 
             return redirect()->route('cuotas.index')->with('success', $mensaje);
         }
