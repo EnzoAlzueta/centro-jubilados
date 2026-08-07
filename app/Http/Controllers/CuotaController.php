@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cuota;
 use App\Models\Socio;
 use App\Models\Movimiento;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -160,7 +161,7 @@ class CuotaController extends Controller
                         'tipo' => 'ingreso',
                         'concepto' => "Pago de cuota: {$socio->apellido}, {$socio->nombre} (Mes {$mes}/{$request->anio})",
                         'monto' => $montoPorMes,
-                        'categoria' => 'cuota',
+                        'categoria_id' => Categoria::getIdPorNombre('Cuota'),
                         'referencia_id' => $cuota->id,
                         'referencia_type' => Cuota::class
                     ]);
@@ -262,7 +263,7 @@ class CuotaController extends Controller
                     'tipo' => 'egreso',
                     'concepto' => "Anulación/Devolución Cuota: {$cuota->socio->apellido}, {$cuota->socio->nombre} ({$cuota->mes}/{$cuota->anio})",
                     'monto' => $cuota->monto,
-                    'categoria' => 'cuota',
+                    'categoria_id' => Categoria::getIdPorNombre('Cuota'),
                     'referencia_id' => $cuota->id,
                     'referencia_type' => Cuota::class
                 ]);

@@ -12,4 +12,7 @@ class Categoria extends Model
     public function movimiento() {
         return $this->hasMany(Movimiento::class);
     }
+    public static function getIdPorNombre($nombre) {
+        return static::where('nombre', $nombre)->value('id');
+    }
 }

@@ -7,6 +7,7 @@ use App\Models\Utileria;
 use App\Models\Socio;
 use App\Models\Sector;
 use App\Models\Movimiento;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -137,7 +138,7 @@ class AlquilerController extends Controller
                         'tipo' => 'ingreso',
                         'concepto' => "Seña Alquiler: " . ($alquiler->socio_id ? $alquiler->socio->apellido : $alquiler->solicitante_externo) . " - " . $alquiler->tipo_evento,
                         'monto' => $alquiler->seña_pagada,
-                        'categoria' => 'alquiler',
+                        'categoria_id' => Categoria::getIdPorNombre('Alquiler'),
                         'referencia_id' => $alquiler->id,
                         'referencia_type' => Alquiler::class
                     ]);
@@ -255,7 +256,7 @@ class AlquilerController extends Controller
                         'tipo' => 'egreso',
                         'concepto' => "Devolución Cancelación: " . ($alquiler->socio_id ? $alquiler->socio->apellido : $alquiler->solicitante_externo) . " - " . $alquiler->tipo_evento,
                         'monto' => $alquiler->seña_pagada,
-                        'categoria' => 'alquiler',
+                        'categoria_id' => Categoria::getIdPorNombre('Alquiler'),
                         'referencia_id' => $alquiler->id,
                         'referencia_type' => Alquiler::class
                     ]);
@@ -296,7 +297,7 @@ class AlquilerController extends Controller
                     'tipo' => 'ingreso',
                     'concepto' => "Pago Saldo Alquiler: " . ($alquiler->socio_id ? $alquiler->socio->apellido : $alquiler->solicitante_externo) . " - " . $alquiler->tipo_evento,
                     'monto' => $validated['monto'],
-                    'categoria' => 'alquiler',
+                    'categoria_id' => Categoria::getIdPorNombre('Alquiler'),
                     'referencia_id' => $alquiler->id,
                     'referencia_type' => Alquiler::class
                 ]);

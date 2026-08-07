@@ -36,10 +36,10 @@ class DatabaseSeeder extends Seeder
 
         // Creamos categorias para los movimientos
         Categoria::create([
-            'nombre' => 'Manual'
+            'nombre' => 'Alquiler'
         ]);
         Categoria::create([
-            'nombre' => 'Servicios'
+            'nombre' => 'Cuota'
         ]);
         Categoria::create([
             'nombre' => 'Mantenimiento'
