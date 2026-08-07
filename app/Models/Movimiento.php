@@ -11,7 +11,7 @@ class Movimiento extends Model
         'tipo',
         'concepto',
         'monto',
-        'categoria',
+        'categoria_id',
         'referencia_id',
         'referencia_type'
     ];
@@ -22,5 +22,9 @@ class Movimiento extends Model
     public function referencia()
     {
         return $this->morphTo();
+    }
+
+    public function categoria() {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 }

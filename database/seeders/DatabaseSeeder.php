@@ -8,6 +8,7 @@ use App\Models\Calle;
 use App\Models\Socio;
 use App\Models\Sector;
 use App\Models\Utileria;
+use App\Models\Categoria;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -31,6 +32,20 @@ class DatabaseSeeder extends Seeder
             'nombre' => 'Salón Principal',
             'descripcion' => 'Capacidad para 200 personas con cocina',
             'precio_base' => 150000.00
+        ]);
+
+        // Creamos categorias para los movimientos
+        Categoria::create([
+            'nombre' => 'Manual'
+        ]);
+        Categoria::create([
+            'nombre' => 'Servicios'
+        ]);
+        Categoria::create([
+            'nombre' => 'Mantenimiento'
+        ]);
+        Categoria::create([
+            'nombre' => 'Insumos'
         ]);
 
         Sector::create([

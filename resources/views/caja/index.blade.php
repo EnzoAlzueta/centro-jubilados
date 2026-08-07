@@ -105,7 +105,7 @@
                             <td>{{ \Carbon\Carbon::parse($movimiento->fecha)->format('d/m/Y') }}</td>
                             <td>
                                 {{ $movimiento->concepto }}
-                                @if($movimiento->categoria == 'cuota' && !$movimiento->referencia?->pagado &&
+                                @if($movimiento->categorias == 'cuota' && !$movimiento->referencia?->pagado &&
                                 $movimiento->tipo == 'ingreso')
                                 <span class="badge bg-secondary ms-2">Anulada</span>
                                 @endif
@@ -113,7 +113,7 @@
                             <td>
                                 <span
                                     class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">
-                                    {{ ucfirst($movimiento->categoria) }}
+                                    {{ ucfirst($movimiento->categoria->nombre) }}
                                 </span>
                             </td>
                             <td>
@@ -172,13 +172,12 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Categoría</label>
-                        <select name="categoria" class="form-select">
-                            <option value="manual">Manual</option>
-                            <option value="servicios">Servicios</option>
-                            <option value="mantenimiento">Mantenimiento</option>
-                            <option value="insumos">Insumos</option>
-                            <option value="otros">Otros</option>
+                        <label for="categoria_id" class="form-label">Categoria</label>
+                        <select name="categoria_id" id="categoria_id" class="form-select" required>
+                            <option value="">Selecciona una categoría</option>
+                            @foreach($categorias as $categoria)
+                            <option value="{{ $categoria->id }}" {{ old('categoria_id') == $categoria->id ? 'selected' : ''}}> {{ $categoria->nombre}} </option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -191,6 +190,18 @@
     </div>
 
     <script type="module">
+        new TomSelect("#categoria_id", {
+            persist:false,
+            sortField: {
+                field: 'text',
+                direction: 'asc'
+            },
+            render: {
+                no_results: function(data, scape) {
+                    return `<div class="no-results">No se encontró la categoria "${scape(data.input)}" </div>`;
+                }
+            }
+        });
         $(document).ready(function () {
             $('#tabla-movimientos').DataTable({
                 responsive: true,

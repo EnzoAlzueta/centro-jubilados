@@ -127,7 +127,7 @@
             <tr>
                 <td>{{ \Carbon\Carbon::parse($movimiento->fecha)->format('d/m/Y') }}</td>
                 <td>{{ $movimiento->concepto }}</td>
-                <td>{{ ucfirst($movimiento->categoria) }}</td>
+                <td>{{ ucfirst($movimiento->categoria->nombre) }}</td>
                 <td>
                     <span class="{{ $movimiento->tipo == 'ingreso' ? 'text-success' : 'text-danger' }}">
                         {{ ucfirst($movimiento->tipo) }}

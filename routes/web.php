@@ -8,6 +8,7 @@ use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\AlquilerController;
 use App\Http\Controllers\UtileriaController;
+use App\Http\Controllers\CategoriaController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -52,6 +53,9 @@ Route::middleware('auth')->group(function () {
     // Caja
     Route::get('/caja', [CajaController::class , 'index'])->name('caja.index');
     Route::post('/caja', [CajaController::class , 'store'])->name('caja.store');
+
+    // Categorias
+    Route::resource('categoria', CategoriaController::class)->parameters(['categoria' => 'categoria'])->names('categorias');
 
     // Reportes
     Route::get('/reportes', [ReporteController::class , 'index'])->name('reportes.index');

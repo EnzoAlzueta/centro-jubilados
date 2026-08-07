@@ -53,8 +53,12 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('caja.index') }}" class="nav-link">Caja</a>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false"> Gestión de Caja</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ route('caja.index') }}" class="dropdown-item"> Caja</a></li>
+                            <li><a href="{{ route('categorias.index') }}" class="dropdown-item"> Categorias</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('reportes.index') }}" class="nav-link">Reportes</a>
