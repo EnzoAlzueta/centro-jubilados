@@ -138,4 +138,11 @@ La migración de siembra deja estos usuarios disponibles en cada instalación:
 -   **Admin**: `admin@admin.com` / `enzoadmin`
 -   **Prueba**: `test@test.com` / `test1234`
 
+Desde la versión `1.1.2`, la migración `2026_10_07_000000_restore_initial_data.php`
+recupera los usuarios y el catálogo inicial que dejaron de crearse al desactivar
+la siembra anterior. Funciona tanto en instalaciones nuevas como al actualizar,
+sin sobrescribir contraseñas ni datos existentes. Si configurás
+`NATIVEPHP_APP_VERSION` en `.env`, actualizalo también a `1.1.2` (o una versión posterior)
+antes de compilar, porque esa variable tiene prioridad sobre `config/nativephp.php`.
+
 ---
