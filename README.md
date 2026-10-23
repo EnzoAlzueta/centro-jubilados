@@ -50,7 +50,7 @@ Para poner en funcionamiento el proyecto localmente, seguí estos pasos:
 ## 🔐 Credenciales de Acceso (Admin)
 
 -   **Usuario**: `admin@admin.com`
--   **Contraseña**: `enzoadmin`
+-   **Contraseña**: `scjadmin`
 
 ## 🔄 ¿Qué hacer luego de un `git pull`?
 
@@ -135,7 +135,7 @@ Nota: Una vez finalizado el build, recordá ejecutar `composer install` nuevamen
 ##### Credenciales de prueba en la app instalada:
 La migración de siembra deja estos usuarios disponibles en cada instalación:
 
--   **Admin**: `admin@admin.com` / `enzoadmin`
+-   **Admin**: `admin@admin.com` / `scjadmin`
 -   **Prueba**: `test@test.com` / `test1234`
 
 Desde la versión `1.1.2`, la migración `2026_10_07_000000_restore_initial_data.php`
@@ -146,3 +146,70 @@ sin sobrescribir contraseñas ni datos existentes. Si configurás
 antes de compilar, porque esa variable tiene prioridad sobre `config/nativephp.php`.
 
 ---
+
+## Creación de usuarios
+
+La cuenta `admin@admin.com` puede crear cuentas desde el menú de su nombre → **Crear usuario**.
+El formulario de registro y su envío requieren sesión de administrador. Las cuentas nuevas
+son usuarios comunes y el administrador conserva su sesión después de crearlas.
+
+El permiso se guarda en `users.is_admin`, no se puede modificar desde el registro ni el perfil.
+Para actualizar una instalación, ejecutar `php artisan migrate`; en NativePHP las migraciones
+se aplican al iniciar la versión actualizada. La migración habilita la cuenta administradora
+existente sin cambiar su contraseña ni los datos de las otras cuentas.
+
+### Datos de demostración (carga manual)
+
+Ejecutar `php artisan db:seed --class=DemoDataSeeder` para agregar socios, cuotas,
+alquileres, utilería y movimientos ficticios identificados como DEMO. Para la base
+local de NativePHP: `DB_DATABASE=database/nativephp.sqlite php artisan db:seed --class=DemoDataSeeder`.
+La carga conserva registros existentes y contraseñas. No se ejecuta automáticamente
+con las migraciones ni con DatabaseSeeder, para evitar datos ficticios en clientes.
+Los datos se comparten entre las cuentas; no pertenecen exclusivamente al usuario test.
+Los ejemplos incluyen cuotas del mes de carga y los dos anteriores, y eventos próximos.
+Repetir la carga no duplica los ejemplos existentes; en meses nuevos agrega las cuotas de esos períodos.
+
+### Instaladores 1.1.3 y pruebas
+
+La edición normal se compila con `php artisan native:build win x64 --no-interaction`.
+Para una edición aislada con datos de demostración: `python3 scripts/build-demo.py`.
+Primero ejecutar `npm run build`. No compilar ambas ediciones simultáneamente.
+La guía de pruebas y limitaciones está en [docs/PRUEBAS-1.1.3.md](docs/PRUEBAS-1.1.3.md).
+
+### Habilitar y deshabilitar datos de prueba (1.1.4)
+
+En la edición normal, el administrador puede abrir el menú de su nombre → **Datos de prueba**.
+**Habilitar** carga los ejemplos para todos los usuarios. **Deshabilitar y quitar** pide
+confirmación, respalda la base SQLite y elimina únicamente los registros creados por esa carga.
+El registro interno `demo_records` permite reconocer los ejemplos aunque se editen sus nombres.
+Las cuentas, los registros anteriores y los creados manualmente se conservan.
+Si esos registros dependen de ejemplos DEMO, se conservan también los ejemplos necesarios y sus pagos;
+la pantalla avisa cuántos quedaron. Resolver esos vínculos permite volver a intentar la limpieza.
+
+Los respaldos se guardan en `storage/app/private/backups` (dentro de la carpeta de datos
+propia de la aplicación en NativePHP), y se excluyen de los instaladores.
+Si el respaldo falla, no se elimina ningún registro. La función de limpieza requiere SQLite.
+Los ejemplos de instalaciones antiguas que no cuenten con marcas de procedencia no se eliminan
+por coincidencia de nombre: se requiere identificar su origen antes de registrarlos para limpieza.
+La versión normal no carga datos de prueba automáticamente. Es suficiente usar una sola instalación.
+
+### Exportar respaldo de la base (1.1.6)
+
+En la edición de escritorio, el administrador puede ir a su menú → **Respaldos** →
+**Exportar respaldo**. La opción **Datos de prueba** queda separada para gestionar los ejemplos. El cuadro de guardado permite elegir el destino del archivo `.sqlite`.
+Se crea una copia completa y consistente aunque la aplicación siga abierta. La exportación
+no modifica la base original. En esta versión, la contraseña inicial de administración es
+`scjadmin`; una contraseña personalizada no se reemplaza al actualizar.
+
+
+### Importar un respaldo (1.1.7)
+
+Desde el menú del administrador → **Respaldos** → **Importar respaldo** se puede elegir un archivo `.sqlite` exportado previamente. La acción avisa que reemplazará los datos, genera primero una copia automática, valida la base y aplica las migraciones pendientes. Si falla la importación, restaura la base previa.
+
+### Correcciones de acceso y perfil (1.1.8)
+
+Al cerrar sesión, la aplicación vuelve a la pantalla inicial. La pregunta de seguridad puede omitirse al actualizar otros datos del perfil; si se envía, sigue siendo obligatoria.
+
+### Corrección de importación SQLite (1.1.9)
+
+La importación pausa los workers de NativePHP, consolida y cierra SQLite antes de reemplazar el archivo, y limpia los sidecars WAL para evitar bloqueos o datos residuales. Ante un error, el administrador también verá el detalle técnico para facilitar el diagnóstico.

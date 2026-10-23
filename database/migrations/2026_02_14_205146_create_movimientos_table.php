@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->enum('tipo', ['ingreso', 'egreso']);
             $table->string('concepto');
             $table->decimal('monto', 10, 2);
-            $table->foreignId('categoria_id')->constrained('categoria'); // se agrega tabla maestra.
             $table->nullableMorphs('referencia'); // referencia_id y referencia_type
             $table->timestamps();
         });

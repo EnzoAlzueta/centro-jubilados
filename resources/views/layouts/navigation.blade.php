@@ -73,6 +73,13 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Editar perfil</a></li>
+                            @can('create-users')
+                            <li><a class="dropdown-item" href="{{ route('register') }}">Crear usuario</a></li>
+                            @endcan
+                            @can('manage-demo-data')
+                            <li><a class="dropdown-item" href="{{ route('demo.index') }}">Datos de prueba</a></li>
+                            <li><a class="dropdown-item" href="{{ route('backups.index') }}">Respaldos</a></li>
+                            @endcan
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <li><a class="dropdown-item" href="route('logout')" onclick="event.preventDefault();

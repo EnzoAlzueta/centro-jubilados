@@ -1,30 +1,18 @@
 <x-app-layout>
     <div class="container-fluid px-4 px-md-5 mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="mb-4">
             <h2 class="fw-bold m-0"><i class="bi bi-calendar-event me-2"></i>Gestión de Alquileres</h2>
-            <div class="d-flex gap-2">
-                @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show mb-0 py-2 shadow-sm" role="alert">
-                    <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @endif
-                @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show mb-0 py-2 shadow-sm" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
-                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @endif
-                @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show mb-0 py-2 shadow-sm" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i> Error en la reserva. Revisa los campos.
-                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @endif
-            </div>
+        </div>
 
-            {{-- Contenedor para alertas dinámicas (AJAX) --}}
-            <div id="ajax-alert-container"></div>
+        <div id="alquiler-alert-container" aria-live="polite" aria-atomic="true">
+            @if($errors->any() || session('error') || session('success'))
+                @php($esError = $errors->any() || session('error'))
+                <div class="alert alert-{{ $esError ? 'danger' : 'success' }} alert-dismissible shadow-sm mb-4 text-break" role="{{ $esError ? 'alert' : 'status' }}" data-success="{{ $esError ? 'false' : 'true' }}">
+                    <i class="bi {{ $esError ? 'bi-exclamation-triangle' : 'bi-check-circle' }} me-2" aria-hidden="true"></i>
+                    {{ $errors->any() ? 'Error en la reserva. Revisa los campos.' : (session('error') ?: session('success')) }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar notificación"></button>
+                </div>
+            @endif
         </div>
 
         <div class="row g-4">
@@ -279,6 +267,38 @@
     </div>
 
     <script>
+        let alquilerAlertTimeout;
+
+        function programarCierreAlquiler(alerta) {
+            clearTimeout(alquilerAlertTimeout);
+            if (alerta?.dataset.success === 'true') {
+                alquilerAlertTimeout = setTimeout(() => alerta.remove(), 5000);
+            }
+        }
+
+        function mostrarNotificacionAlquiler(mensaje) {
+            const contenedor = document.getElementById('alquiler-alert-container');
+            const alerta = document.createElement('div');
+            alerta.className = 'alert alert-success alert-dismissible shadow-sm mb-4 text-break';
+            alerta.setAttribute('role', 'status');
+            alerta.dataset.success = 'true';
+
+            const icono = document.createElement('i');
+            icono.className = 'bi bi-check-circle me-2';
+            icono.setAttribute('aria-hidden', 'true');
+            const texto = document.createElement('span');
+            texto.textContent = mensaje;
+            const cerrar = document.createElement('button');
+            cerrar.type = 'button';
+            cerrar.className = 'btn-close';
+            cerrar.setAttribute('data-bs-dismiss', 'alert');
+            cerrar.setAttribute('aria-label', 'Cerrar notificación');
+            alerta.append(icono, texto, cerrar);
+
+            contenedor.replaceChildren(alerta);
+            programarCierreAlquiler(alerta);
+        }
+
         // Cierra el modal de detalle y espera a que termine la animación:
         // Bootstrap no encima bien dos modales, así que los de confirmación
         // y aviso se muestran recién cuando este quedó oculto.
@@ -297,6 +317,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            programarCierreAlquiler(document.querySelector('#alquiler-alert-container .alert'));
+
 
             // TomSelect de socios
             const socioTomSelect = new TomSelect("#socio_id", {
@@ -473,14 +495,7 @@
                             // Cerrar modal actual
                             await ocultarModalDetalle();
 
-                            // Mostrar mensaje de éxito en el contenedor específico
-                            const alertContainer = document.getElementById('ajax-alert-container');
-                            const alertHtml = `
-                            <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-                                <i class="bi bi-check-circle me-2"></i> ${data.message}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>`;
-                            alertContainer.innerHTML = alertHtml;
+                            mostrarNotificacionAlquiler(data.message);
 
                             // Recargar calendario
                             calendar.refetchEvents();
@@ -611,7 +626,7 @@
                 })
                     .then(async response => {
                         if (response.ok) {
-                            await avisar('Reserva cancelada correctamente.', { titulo: 'Reserva cancelada' });
+                            mostrarNotificacionAlquiler('Reserva cancelada correctamente.');
                             location.reload();
                         } else {
                             avisar('Error al cancelar la reserva.', { titulo: 'Error' });

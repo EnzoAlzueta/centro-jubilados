@@ -13,11 +13,16 @@ class NativeAppServiceProvider implements ProvidesPhpIni
      */
     public function boot(): void
     {
+        // Centrado aproximado para una pantalla típica 1920x1080. Si la pantalla
+        // es más chica, la ventana quedará pegada al borde superior izquierdo
+        // pero seguirá siendo redimensionable. Se evita ->center() porque en
+        // la versión de NativePHP instalada el trait HasPositioner no está
+        // aplicado a PendingOpenWindow y el método no está disponible.
         Window::open()
             ->title('Centro de Jubilados') // El título de la ventana
             ->width(1280) // Ancho por defecto
             ->height(800) // Alto por defecto
-            ->center() // Que aparezca en el centro de la pantalla
+            ->position(320, 140) // Centrado aproximado en 1920x1080
             ->showDevTools(false); // Oculta la consola de desarrollador para el cliente
     }
     /**

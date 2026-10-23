@@ -20,7 +20,7 @@ class InitialDataTest extends TestCase
         $this->assertTrue(Hash::check('tobi', $user->security_answer));
         $this->assertSame('¿Cuál es el nombre de la mascota del sistema?', $user->security_question);
         $admin = User::where('email', 'admin@admin.com')->firstOrFail();
-        $this->assertTrue(Hash::check('enzoadmin', $admin->password));
+        $this->assertTrue(Hash::check('scjadmin', $admin->password));
         $this->assertDatabaseHas('barrios', ['nombre' => 'Centro']);
         $this->assertDatabaseHas('sectors', ['nombre' => 'Salón Principal', 'precio_base' => 150000]);
         $this->assertDatabaseHas('sectors', ['nombre' => 'Quincho c/ Parrilla', 'precio_base' => 80000]);
@@ -50,4 +50,16 @@ class InitialDataTest extends TestCase
         $migration->down();
         $this->assertDatabaseCount('users', 2);
     }
+    public function test_password_upgrade_only_changes_the_old_default_password(): void
+    {
+        $admin = User::where('email', 'admin@admin.com')->firstOrFail();
+        $admin->update(['password' => 'enzoadmin']);
+        $migration = require database_path('migrations/2026_10_23_020000_update_default_admin_password.php');
+        $migration->up();
+        $this->assertTrue(Hash::check('scjadmin', $admin->fresh()->password));
+        $admin->update(['password' => 'clave-personalizada']);
+        $migration->up();
+        $this->assertTrue(Hash::check('clave-personalizada', $admin->fresh()->password));
+    }
+
 }

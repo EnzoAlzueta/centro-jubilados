@@ -1,28 +1,27 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\BarrioController;
-use App\Http\Controllers\SocioController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CajaController;
-use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\AlquilerController;
-use App\Http\Controllers\UtileriaController;
+use App\Http\Controllers\BarrioController;
+use App\Http\Controllers\CajaController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SocioController;
+use App\Http\Controllers\UtileriaController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', [DashboardController::class , 'index'])
+Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Barrios
     Route::resource('barrios', BarrioController::class)->names('barrios');
@@ -30,38 +29,47 @@ Route::middleware('auth')->group(function () {
 
     // Socios
     Route::resource('socios', SocioController::class)->names('socios');
-    Route::get('/socios/{socio}/cartola', [SocioController::class , 'cartola'])->name('socios.cartola');
+    Route::get('/socios/{socio}/cartola', [SocioController::class, 'cartola'])->name('socios.cartola');
 
     // Cuotas
     Route::get('/cuotas/pagadas/{socioId}/{anio}', [App\Http\Controllers\CuotaController::class, 'getMesesPagados'])->name('cuotas.pagadas');
     Route::resource('cuotas', App\Http\Controllers\CuotaController::class)->names('cuotas');
-    Route::post('/cuotas/{id}/restore', [App\Http\Controllers\CuotaController::class , 'restore'])->name('cuotas.restore');
+    Route::post('/cuotas/{id}/restore', [App\Http\Controllers\CuotaController::class, 'restore'])->name('cuotas.restore');
 
     // Alquileres
-    Route::get('/alquileres', [AlquilerController::class , 'index'])->name('alquileres.index');
-    Route::get('/alquileres/eventos', [AlquilerController::class , 'getEvents'])->name('alquileres.eventos');
-    Route::post('/alquileres', [AlquilerController::class , 'store'])->name('alquileres.store');
-    Route::get('/alquileres/{id}', [AlquilerController::class , 'show'])->name('alquileres.show');
-    Route::put('/alquileres/{id}', [AlquilerController::class , 'update'])->name('alquileres.update');
-    Route::post('/alquileres/{id}/pagar-saldo', [AlquilerController::class , 'registrarPago'])->name('alquileres.pagar-saldo');
-    Route::delete('/alquileres/{id}', [AlquilerController::class , 'destroy'])->name('alquileres.destroy');
+    Route::get('/alquileres', [AlquilerController::class, 'index'])->name('alquileres.index');
+    Route::get('/alquileres/eventos', [AlquilerController::class, 'getEvents'])->name('alquileres.eventos');
+    Route::post('/alquileres', [AlquilerController::class, 'store'])->name('alquileres.store');
+    Route::get('/alquileres/{id}', [AlquilerController::class, 'show'])->name('alquileres.show');
+    Route::put('/alquileres/{id}', [AlquilerController::class, 'update'])->name('alquileres.update');
+    Route::post('/alquileres/{id}/pagar-saldo', [AlquilerController::class, 'registrarPago'])->name('alquileres.pagar-saldo');
+    Route::delete('/alquileres/{id}', [AlquilerController::class, 'destroy'])->name('alquileres.destroy');
 
     // Utilería y Sectores
     Route::resource('utilerias', UtileriaController::class)->names('utilerias');
     Route::resource('sectores', App\Http\Controllers\SectorController::class)->names('sectores');
 
     // Caja
-    Route::get('/caja', [CajaController::class , 'index'])->name('caja.index');
-    Route::post('/caja', [CajaController::class , 'store'])->name('caja.store');
+    Route::get('/caja', [CajaController::class, 'index'])->name('caja.index');
+    Route::post('/caja', [CajaController::class, 'store'])->name('caja.store');
 
     // Categorias
     Route::resource('categoria', CategoriaController::class)->parameters(['categoria' => 'categoria'])->names('categorias');
 
     // Reportes
-    Route::get('/reportes', [ReporteController::class , 'index'])->name('reportes.index');
-    Route::get('/reportes/socios', [ReporteController::class , 'sociosPdf'])->name('reportes.socios');
-    Route::get('/reportes/alquileres', [ReporteController::class , 'alquileresPdf'])->name('reportes.alquileres');
-    Route::get('/reportes/caja', [ReporteController::class , 'cajaPdf'])->name('reportes.caja');
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/socios', [ReporteController::class, 'sociosPdf'])->name('reportes.socios');
+    Route::get('/reportes/alquileres', [ReporteController::class, 'alquileresPdf'])->name('reportes.alquileres');
+    Route::get('/reportes/caja', [ReporteController::class, 'cajaPdf'])->name('reportes.caja');
 });
 
-require __DIR__ . '/auth.php';
+Route::middleware(['auth', 'can:manage-demo-data'])->group(function () {
+    Route::get('/datos-prueba', [App\Http\Controllers\DemoDataController::class, 'index'])->name('demo.index');
+    Route::post('/datos-prueba', [App\Http\Controllers\DemoDataController::class, 'store'])->name('demo.store');
+    Route::get('/respaldos', [App\Http\Controllers\BackupController::class, 'index'])->name('backups.index');
+    Route::post('/respaldos/exportar', [App\Http\Controllers\BackupController::class, 'export'])->name('backups.export');
+    Route::post('/respaldos/importar', [App\Http\Controllers\BackupController::class, 'import'])->name('backups.import');
+    Route::delete('/datos-prueba', [App\Http\Controllers\DemoDataController::class, 'destroy'])->name('demo.destroy');
+});
+
+require __DIR__.'/auth.php';

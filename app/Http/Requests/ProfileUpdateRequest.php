@@ -25,7 +25,7 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
-            'security_question' => ['required', 'string', 'max:255'],
+            'security_question' => ['sometimes', 'required', 'string', 'max:255'],
             'security_answer' => ['nullable', 'string', 'max:255'],
         ];
     }
