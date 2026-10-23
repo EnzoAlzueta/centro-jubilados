@@ -105,7 +105,7 @@
                             <td>{{ \Carbon\Carbon::parse($movimiento->fecha)->format('d/m/Y') }}</td>
                             <td>
                                 {{ $movimiento->concepto }}
-                                @if($movimiento->categorias == 'cuota' && !$movimiento->referencia?->pagado &&
+                                @if($movimiento->categoria?->nombre == 'cuota' && !$movimiento->referencia?->pagado &&
                                 $movimiento->tipo == 'ingreso')
                                 <span class="badge bg-secondary ms-2">Anulada</span>
                                 @endif
@@ -113,7 +113,7 @@
                             <td>
                                 <span
                                     class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">
-                                    {{ ucfirst($movimiento->categoria->nombre) }}
+                                    {{ ucfirst($movimiento->categoria?->nombre ?? 'Sin categoría') }}
                                 </span>
                             </td>
                             <td>

@@ -6,7 +6,7 @@ return [
      * It is used to determine if the app needs to be updated.
      * Increment this value every time you release a new version of your app.
      */
-    'version' => env('NATIVEPHP_APP_VERSION', '1.1.2'),
+    'version' => env('NATIVEPHP_APP_VERSION', '1.1.9'),
 
     /**
      * The ID of your application. This should be a unique identifier
@@ -59,6 +59,8 @@ return [
      * You may use wildcards to match multiple keys.
      */
     'cleanup_env_keys' => [
+        'APP_DEBUG',
+        'APP_ENV',
         'AWS_*',
         'AZURE_*',
         'GITHUB_*',
@@ -86,6 +88,10 @@ return [
         'content',
         'node_modules',
         '*/tests',
+        '*.docx',
+        'storage/app/backups',
+        'storage/app/private/backups',
+        'public/hot',
     ],
 
     /**
